@@ -67,7 +67,7 @@ export const Encroachment: React.FC<{ onSelectPlot: (id: string | null) => void 
               ))}
             </div>
           </div>
-          <MapView plots={affectedPlots} onSelect={onSelectPlot} height={380} />
+          <MapView plots={plots} onSelect={onSelectPlot} height={420} />
         </div>
 
         <div className="card">

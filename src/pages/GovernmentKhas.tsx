@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useI18n } from '../i18n/provider';
 import { I } from '../components/ui/Icons';
 import { StatusBadge, BilingualName } from '../components/ui/StatusBadge';
-import { khasRecords } from '../data/seed';
+import { khasRecords, plots } from '../data/seed';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toaster';
+import { MapView } from '../components/ui/MapView';
 
 export const GovernmentKhas: React.FC = () => {
   const { t } = useI18n();
@@ -52,6 +53,10 @@ export const GovernmentKhas: React.FC = () => {
           <div className="kpi__value">{encr.toLocaleString()}</div>
           <div className="kpi__delta">{t('units.shotok')}</div>
         </div>
+      </div>
+
+      <div className="mb-16">
+        <MapView plots={plots} height={420} />
       </div>
 
       <div className="card">

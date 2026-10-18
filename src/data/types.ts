@@ -11,6 +11,19 @@ export type Owner = {
   fatherName: string;
 };
 
+export type UnusualActivity = {
+  id: string;
+  plotId: string;
+  type: 'encroachment_attempt' | 'sand_filling' | 'river_erosion' | 'fraud_deed' | 'boundary_shift';
+  title: string;
+  titleBn: string;
+  description: string;
+  descriptionBn: string;
+  severity: 'critical' | 'high' | 'medium';
+  timestamp: string;
+  source: 'satellite' | 'iot_sensor' | 'drone' | 'citizen_report';
+};
+
 export type Plot = {
   id: string;            // e.g. "PLT-DHK-001"
   khatian: string;       // khatian number
@@ -24,14 +37,17 @@ export type Plot = {
   areaShotok: number;
   areaDecimal: number;
   owner: Owner;
+  ownershipType: 'khas' | 'malikana';
+  khasClassification?: 'urban' | 'rural' | 'aquatic' | 'agricultural';
   landClass: 'residential' | 'agricultural' | 'commercial' | 'khas' | 'riverbed';
   riskScore: number;     // 0-100 (lower = safer)
   healthFactors: { legal: number; physical: number; environmental: number; fraud: number };
   coords: Coordinates;
   shape: Coordinates[];   // polygon vertices
-  status: 'active' | 'encroached' | 'disputed' | 'locked' | 'shikosti' | 'poyosti' | 'under_review';
+  status: 'active' | 'encroached' | 'disputed' | 'locked' | 'shikosti' | 'poyosti' | 'under_review' | 'allocated';
   erosion: number;        // 0-100 % of area eroded
   encumbrance: { bank: string; amount: number; since: string } | null;
+  unusualActivity?: UnusualActivity | null;
 };
 
 export type Deed = {
