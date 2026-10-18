@@ -1541,7 +1541,7 @@ function verifyChain(): { valid: boolean; brokenAt?: number } {
 
 ### A. Smart Mouza-Rate & Revenue Valuation
 
-**Minimum value** = gazetted mouza rate per decimal × area in decimals (adjusted for land class and road access).
+**Minimum value** = gazetted mouza rate per decimal × area in decimals (adjusted for land class and road access).  
 **Fee base** = `max(declared value, minimum value)` — an undervalued deed triggers the **Registration Block Alert**.
 
 | Component | Rate | Basis |
