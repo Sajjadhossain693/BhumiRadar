@@ -529,8 +529,12 @@ export const bn: Dict = {
   'map.legend.khas': 'সরকারি খাসজমি',
   'map.legend.malikana': 'ব্যক্তি মালিকানা জমি',
   'map.legend.unusual': 'অস্বাভাবিক কার্যকলাপ / ঝুঁকি',
+  'map.fullLandView': 'জমির পূর্ণাঙ্গ ভিউ',
+  'map.nationalView': 'সমগ্র বাংলাদেশ',
 
   // ===== Reports – sample =====
+  'rep.warningLabel': 'সতর্কতা',
+  'rep.assistantLandOfficer': 'ভূমি সহকারী কর্মকর্তা',
   'rep.signedBy': 'ডিজিটাল স্বাক্ষরিত',
   'rep.validation': 'যাচাইকরণ',
   'rep.appRightTitle': 'আবেদন নং',

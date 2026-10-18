@@ -529,8 +529,12 @@ export const en: Dict = {
   'map.legend.khas': 'Govt Khas Land',
   'map.legend.malikana': 'Private Malikana Land',
   'map.legend.unusual': 'Unusual Activity / Anomaly',
+  'map.fullLandView': 'Full Land View',
+  'map.nationalView': 'National View',
 
   // ===== Reports – sample =====
+  'rep.warningLabel': 'Warning',
+  'rep.assistantLandOfficer': 'Assistant Land Officer',
   'rep.signedBy': 'Digitally signed by',
   'rep.validation': 'Validation',
   'rep.appRightTitle': 'Application No.',

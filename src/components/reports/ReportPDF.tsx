@@ -21,8 +21,11 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   const today = new Date();
-  const dateStr = today.toLocaleDateString('en-GB').replace(/\//g, '/');
-  const timeStr = today.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  // Keep record identifiers untouched, but present generated dates in the
+  // selected report language and numeral system.
+  const reportLocale = lang === 'bn' ? 'bn-BD' : 'en-GB';
+  const dateStr = today.toLocaleDateString(reportLocale, { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const timeStr = today.toLocaleTimeString(reportLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
   const reportId = `2026/888881/${plot.id.split('-')[1] || 'ENC'}`;
   const appId = `00000000`;
   const khatian = plot.khatian;
@@ -173,7 +176,7 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
 
         {/* Warning */}
         <div className="report-warning">
-          <strong>{lang === 'bn' ? 'সতর্কতা / Warning' : 'Warning / সতর্কতা'}: </strong>
+          <strong>{t('rep.warningLabel')}: </strong>
           {t('rep.warningBody')}
         </div>
 
@@ -201,11 +204,11 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
                 </defs>
                 <circle cx="60" cy="60" r="55" fill="url(#seal-g)" stroke="#1e3a8a" strokeWidth="1.5" />
                 <circle cx="60" cy="60" r="48" fill="none" stroke="#1e3a8a" strokeWidth="0.8" strokeDasharray="2 2" />
-                <text x="60" y="38" textAnchor="middle" fontSize="8" fontWeight="700" fill="#1e3a8a">{lang === 'bn' ? 'ভূমি সহকারী কর্মকর্তা' : 'Assistant Land Officer'}</text>
+                <text x="60" y="38" textAnchor="middle" fontSize="8" fontWeight="700" fill="#1e3a8a">{t('rep.assistantLandOfficer')}</text>
                 <text x="60" y="65" textAnchor="middle" fontSize="9" fontWeight="800" fill="#1e3a8a">{t('rep.digitalSignature')}</text>
                 <text x="60" y="77" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{reportId}</text>
                 <text x="60" y="87" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{dateStr} {timeStr}</text>
-                <text x="60" y="99" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#1e3a8a">{lang === 'bn' ? 'ভূমি মন্ত্রণালয়' : 'Ministry of Land'}</text>
+                <text x="60" y="99" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#1e3a8a">{t('app.ministry')}</text>
               </svg>
             </div>
             <div className="report-sig-line">{t('rep.signedBy')}</div>
