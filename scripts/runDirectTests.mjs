@@ -5,7 +5,17 @@ import {
   recordAuditEvent,
   simulateTamper,
   resetLedgerIntegrity,
+  canonicalSerialize,
 } from '../src/services/auditLedger.ts';
+
+import {
+  sanitizeString,
+  isValidOtp,
+  maskPhone,
+  maskNid,
+  sanitizeNumeric,
+  isWithinBangladeshBounds,
+} from '../src/services/security.ts';
 
 import {
   convertToDecimal,
@@ -252,6 +262,77 @@ test('suspends PoA upon simulated principal death event trigger', () => {
   });
   assert.strictEqual(res.isValid, false);
   assert.strictEqual(res.verdictCode, 'PRINCIPAL_DEATH_DETERMINED');
+});
+
+// Security & Penetration Defenses
+console.log('\n🛡️ Testing Security, Penetration Defenses & Vulnerability Mitigations');
+
+test('strips HTML script tags and XSS injection vectors from citizen inputs', () => {
+  const dirty = '<script>alert("XSS")</script>তুরাগ নদী ভরাট <img src="x" onerror="evil()"/>';
+  const clean = sanitizeString(dirty, 500);
+  assert.strictEqual(clean.includes('<script>'), false);
+  assert.strictEqual(clean.includes('onerror='), false);
+  assert.strictEqual(clean.includes('তুরাগ নদী ভরাট'), true);
+});
+
+test('masks citizen phone number and NID in cryptographic audit ledger to prevent PII exposure', () => {
+  const report = submitCitizenEncroachmentReport({
+    category: 'canal_river_filling',
+    description: 'খাল ভরাট',
+    incidentDate: '2026-02-18',
+    locationName: 'তুরাগ',
+    isAnonymous: false,
+    reporterInfo: { name: 'আনিসুর রহমান', phone: '01712998877', nid: '1988123456789' },
+  });
+  const ledger = getAuditLedger();
+  const event = ledger.find(e => e.resourceId === report.id);
+  assert.ok(event !== undefined);
+  // Phone must be masked in actorId: e.g. "CITIZEN-0171****877"
+  assert.strictEqual(event.actorId.includes('0171****877'), true);
+  assert.strictEqual(event.actorId.includes('01712998877'), false);
+});
+
+test('rejects non-numeric simulated OTP strings in PoA revocation', () => {
+  assert.strictEqual(isValidOtp('123456'), true);
+  assert.strictEqual(isValidOtp('abcdef'), false);
+  assert.strictEqual(isValidOtp('12345'), false);
+  assert.strictEqual(isValidOtp('1234567'), false);
+  assert.strictEqual(isValidOtp(';-- DROP TABLE'), false);
+
+  const res = executePoaRevocation({
+    poaId: 'POA-2023-SAV-0412',
+    revocationDeedNo: 'বাতিলনামা',
+    reasonBn: 'চুক্তি ভঙ্গ',
+    reasonEn: 'Breach',
+    actorId: 'OFFICER',
+    simulatedOtp: 'abcdef', // invalid alphanumeric OTP
+  });
+  assert.strictEqual(res.success, false);
+});
+
+test('filters prototype pollution keys (__proto__, constructor) from canonical serialization', () => {
+  const payloadWithPollution = JSON.parse('{"__proto__":{"polluted":true},"normalField":"cleanValue"}');
+  const serialized = canonicalSerialize(payloadWithPollution);
+  assert.strictEqual(serialized.includes('__proto__'), false);
+  assert.strictEqual(serialized.includes('normalField'), true);
+  // Ensure Object prototype was not polluted
+  assert.strictEqual(Object.prototype.polluted, undefined);
+});
+
+test('handles circular references gracefully without stack overflow', () => {
+  const cyclicObj = { a: 1 };
+  cyclicObj.self = cyclicObj;
+  const serialized = canonicalSerialize(cyclicObj);
+  assert.strictEqual(serialized.includes('[CIRCULAR_REF]'), true);
+});
+
+test('sanitizes negative or NaN values in financial and area calculations', () => {
+  assert.strictEqual(sanitizeNumeric(-500, 0, 0, 1000), 0);
+  assert.strictEqual(sanitizeNumeric(NaN, 10), 10);
+  assert.strictEqual(sanitizeNumeric(Infinity, 0, 0, 5000), 0); // Rejects non-finite Infinity
+  assert.strictEqual(sanitizeNumeric(999999, 0, 0, 5000), 5000); // Clamps to max allowed
+  assert.strictEqual(isWithinBangladeshBounds(23.8, 90.4), true); // Dhaka
+  assert.strictEqual(isWithinBangladeshBounds(48.8, 2.3), false);  // Paris
 });
 
 console.log(`\n========================================`);

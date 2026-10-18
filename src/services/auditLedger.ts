@@ -176,17 +176,31 @@ export interface VerificationResult {
 export const GENESIS_HASH = '0000000000000000000000000000000000000000000000000000000000000000';
 
 /**
- * Deterministically serializes an object with sorted keys
+ * Deterministically serializes an object with sorted keys.
+ * Hardened against prototype pollution (__proto__, constructor) and circular recursion DoS.
  */
-export function canonicalSerialize(obj: any): string {
+export function canonicalSerialize(obj: any, depth = 0, seen = new WeakSet()): string {
+  if (depth > 12) {
+    return '"[MAX_DEPTH_EXCEEDED]"';
+  }
   if (obj === null || typeof obj !== 'object') {
     return JSON.stringify(obj);
   }
-  if (Array.isArray(obj)) {
-    return '[' + obj.map(canonicalSerialize).join(',') + ']';
+  if (seen.has(obj)) {
+    return '"[CIRCULAR_REF]"';
   }
-  const keys = Object.keys(obj).sort();
-  return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalSerialize(obj[k])).join(',') + '}';
+  seen.add(obj);
+
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(item => canonicalSerialize(item, depth + 1, seen)).join(',') + ']';
+  }
+
+  // Filter out hazardous prototype pollution keys
+  const keys = Object.keys(obj)
+    .filter(k => k !== '__proto__' && k !== 'constructor' && k !== 'prototype')
+    .sort();
+
+  return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalSerialize(obj[k], depth + 1, seen)).join(',') + '}';
 }
 
 /**

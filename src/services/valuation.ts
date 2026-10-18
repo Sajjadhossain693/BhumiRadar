@@ -4,6 +4,7 @@
  */
 
 import { recordAuditEvent } from './auditLedger';
+import { sanitizeString, sanitizeNumeric } from './security';
 
 export type LandClassification =
   | 'agricultural'
@@ -275,14 +276,18 @@ export interface ValuationResult {
  * Main Valuation Engine & Fee Estimator Calculation
  */
 export function calculateLandValuation(input: ValuationCalculationInput): ValuationResult {
-  const schedule = getMouzaValuationSchedule(input.mouzaId);
-  const totalDecimal = Number(convertToDecimal(input.area, input.unit).toFixed(4));
+  const cleanMouzaId = sanitizeString(input.mouzaId, 80);
+  const safeArea = sanitizeNumeric(input.area, 0, 0, 100000);
+  const safeDeclaredPrice = sanitizeNumeric(input.declaredPrice, 0, 0, 1e12);
+
+  const schedule = getMouzaValuationSchedule(cleanMouzaId);
+  const totalDecimal = Number(convertToDecimal(safeArea, input.unit).toFixed(4));
   const baseRate = schedule.baseRatesPerDecimal[input.landClass] || 500000;
   const frontageInfo = getFrontageMultiplier(input.frontage);
   const effectiveRate = Math.round(baseRate * frontageInfo.factor);
   const officialMinimumValuation = Math.round(effectiveRate * totalDecimal);
 
-  const declaredPrice = Math.max(0, input.declaredPrice || 0);
+  const declaredPrice = safeDeclaredPrice;
   const priceDifference = declaredPrice - officialMinimumValuation;
   const isUndervalued = declaredPrice < officialMinimumValuation;
 

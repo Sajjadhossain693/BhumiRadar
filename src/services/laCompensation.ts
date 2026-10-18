@@ -5,6 +5,7 @@
 
 import { plots } from '../data/seed';
 import { recordAuditEvent } from './auditLedger';
+import { sanitizeString, sanitizeNumeric, maskNid, maskPhone } from './security';
 
 export type AcquiringPurpose = 'public_government' | 'non_government_commercial';
 
@@ -306,18 +307,33 @@ export function createCompensationClaim(params: {
   cropsValuation?: number;
   relocationAllowance?: number;
 }): CompensationClaim {
-  const project = ACQUISITION_PROJECTS.find(p => p.id === params.projectId) || ACQUISITION_PROJECTS[0];
-  const plot = plots.find(p => p.id === params.plotId) || plots[0];
+  const cleanProjectId = sanitizeString(params.projectId, 50);
+  const cleanPlotId = sanitizeString(params.plotId, 50);
+  const cleanClaimantName = sanitizeString(params.claimantName, 100);
+  const cleanClaimantNid = sanitizeString(params.claimantNid, 25);
+  const cleanClaimantPhone = sanitizeString(params.claimantPhone, 20);
+  const cleanBankAccountNo = sanitizeString(params.bankAccountNo, 35);
+  const cleanBankName = sanitizeString(params.bankName, 100);
+  const cleanBankRoutingNo = sanitizeString(params.bankRoutingNo, 20);
+
+  const safeArea = sanitizeNumeric(params.areaAcquiredDecimal, 0, 0, 100000);
+  const safeStructure = sanitizeNumeric(params.structureValuation, 0, 0, 1e12);
+  const safeTrees = sanitizeNumeric(params.treesValuation, 0, 0, 1e12);
+  const safeCrops = sanitizeNumeric(params.cropsValuation, 0, 0, 1e12);
+  const safeRelocation = sanitizeNumeric(params.relocationAllowance, 0, 0, 1e12);
+
+  const project = ACQUISITION_PROJECTS.find(p => p.id === cleanProjectId) || ACQUISITION_PROJECTS[0];
+  const plot = plots.find(p => p.id === cleanPlotId) || plots[0];
 
   const market = calculate12MonthMarketAverage(plot.mouza, plot.landClass);
   const breakdown = computeLACompensationBreakdown({
-    areaAcquiredDecimal: params.areaAcquiredDecimal,
+    areaAcquiredDecimal: safeArea,
     twelveMonthAverageRatePerDecimal: market.averageRate,
     purpose: project.defaultPurpose,
-    structureValuation: params.structureValuation,
-    treesValuation: params.treesValuation,
-    cropsValuation: params.cropsValuation,
-    relocationAllowance: params.relocationAllowance,
+    structureValuation: safeStructure,
+    treesValuation: safeTrees,
+    cropsValuation: safeCrops,
+    relocationAllowance: safeRelocation,
   });
 
   const seq = claimsStore.length + 1;
@@ -332,14 +348,14 @@ export function createCompensationClaim(params: {
     dagNo: plot.dag,
     khatianNo: plot.khatian,
     mouza: plot.mouzaBn,
-    areaAcquiredDecimal: params.areaAcquiredDecimal,
+    areaAcquiredDecimal: safeArea,
     landClass: plot.landClass,
-    claimantName: params.claimantName,
-    claimantNid: params.claimantNid,
-    claimantPhone: params.claimantPhone,
-    bankAccountNo: params.bankAccountNo,
-    bankName: params.bankName,
-    bankRoutingNo: params.bankRoutingNo,
+    claimantName: cleanClaimantName,
+    claimantNid: cleanClaimantNid,
+    claimantPhone: cleanClaimantPhone,
+    bankAccountNo: cleanBankAccountNo,
+    bankName: cleanBankName,
+    bankRoutingNo: cleanBankRoutingNo,
     twelveMonthAverageRatePerDecimal: market.averageRate,
     comparableDeedsCount: market.comparableCount,
     baseLandMarketValue: breakdown.baseLandMarketValue,
@@ -356,7 +372,7 @@ export function createCompensationClaim(params: {
 
   claimsStore = [newClaim, ...claimsStore];
 
-  // Record into Cryptographic Audit Ledger
+  // Record into Cryptographic Audit Ledger with masked PII
   recordAuditEvent({
     eventType: 'COMPENSATION_CALCULATED',
     resourceType: 'compensation_claim',
@@ -369,7 +385,7 @@ export function createCompensationClaim(params: {
       claimId: id,
       projectId: project.id,
       plotId: plot.id,
-      claimantNid: params.claimantNid,
+      claimantNid: maskNid(cleanClaimantNid),
       totalAmount: breakdown.totalCompensationAmount,
     },
   });
@@ -381,14 +397,17 @@ export function createCompensationClaim(params: {
  * Approve Claim by Authorized Officer (ADC Revenue / AC Land)
  */
 export function approveCompensationClaim(claimId: string, officerName: string): CompensationClaim | null {
-  const idx = claimsStore.findIndex(c => c.id === claimId);
+  const cleanClaimId = sanitizeString(claimId, 50);
+  const cleanOfficerName = sanitizeString(officerName || 'OFFICER-ADC-REV', 100);
+
+  const idx = claimsStore.findIndex(c => c.id === cleanClaimId);
   if (idx === -1) return null;
 
   const current = claimsStore[idx];
   const updated: CompensationClaim = {
     ...current,
     status: 'approved',
-    approvalOfficer: officerName,
+    approvalOfficer: cleanOfficerName,
     approvalDate: new Date().toISOString().split('T')[0],
   };
 
@@ -398,15 +417,15 @@ export function approveCompensationClaim(claimId: string, officerName: string): 
     eventType: 'COMPENSATION_CLAIM_APPROVED',
     resourceType: 'compensation_claim',
     resourceId: current.id,
-    actorId: officerName,
+    actorId: cleanOfficerName,
     actorRole: 'AC_LAND',
     actionSummaryBn: `অতিরিক্ত জেলা প্রশাসক (রাজস্ব) কর্তৃক ক্ষতিপূরণ দাবি ${current.id} অনুমোদন (টাকা: ৳ ${current.totalCompensationAmount.toLocaleString('bn-BD')})`,
     actionSummaryEn: `ADC Revenue approved compensation claim ${current.id} (BDT ${current.totalCompensationAmount.toLocaleString()})`,
     payload: {
       claimId: current.id,
       approvedAmount: current.totalCompensationAmount,
-      claimantNid: current.claimantNid,
-      officer: officerName,
+      claimantNid: maskNid(current.claimantNid),
+      officer: cleanOfficerName,
     },
   });
 
@@ -417,7 +436,10 @@ export function approveCompensationClaim(claimId: string, officerName: string): 
  * Disburse Payment via Simulated Direct G2P / BEFTN EFT
  */
 export function simulateDisbursePayment(claimId: string, officerName: string): CompensationClaim | null {
-  const idx = claimsStore.findIndex(c => c.id === claimId);
+  const cleanClaimId = sanitizeString(claimId, 50);
+  const cleanOfficerName = sanitizeString(officerName || 'OFFICER-AC-LAND', 100);
+
+  const idx = claimsStore.findIndex(c => c.id === cleanClaimId);
   if (idx === -1) return null;
 
   const current = claimsStore[idx];
@@ -434,19 +456,23 @@ export function simulateDisbursePayment(claimId: string, officerName: string): C
 
   claimsStore[idx] = updated;
 
+  // Mask bank account number in public audit ledger: e.g. "2050********8899"
+  const maskedBankAccount = current.bankAccountNo.length > 8
+    ? `${current.bankAccountNo.slice(0, 4)}********${current.bankAccountNo.slice(-4)}`
+    : '****';
+
   recordAuditEvent({
     eventType: 'COMPENSATION_PAYMENT_INITIATED',
     resourceType: 'compensation_claim',
     resourceId: current.id,
-    actorId: officerName,
+    actorId: cleanOfficerName,
     actorRole: 'AC_LAND',
     actionSummaryBn: `সরাসরি জি২পি/ইএফটি ক্ষতিপূরণ অর্থ প্রদান সম্পন্ন (রেফারেন্স: ${paymentReference}, ব্যাংক: ${current.bankName})`,
     actionSummaryEn: `Direct G2P/EFT compensation disbursement simulated (Ref: ${paymentReference}, Bank: ${current.bankName})`,
     payload: {
       claimId: current.id,
       disbursedAmount: current.totalCompensationAmount,
-      bankAccount: current.bankAccountNo,
-      bankRouting: current.bankRoutingNo,
+      bankAccount: maskedBankAccount,
       paymentReference,
       simulatedEftBatchNo,
     },

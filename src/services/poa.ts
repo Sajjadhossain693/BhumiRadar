@@ -5,6 +5,7 @@
  */
 
 import { recordAuditEvent } from './auditLedger';
+import { sanitizeString, isValidOtp } from './security';
 
 export type PoaType =
   | 'general'           // সাধারণ আমমোক্তারনামা
@@ -299,24 +300,30 @@ export function executePoaRevocation(params: {
   actorId: string;
   simulatedOtp: string;
 }): { success: boolean; message: string; record?: PowerOfAttorneyRecord } {
-  // Verify simulated OTP (must be 6 digits, e.g. "882104" or any 6-digit code)
-  if (!params.simulatedOtp || params.simulatedOtp.length !== 6) {
-    return { success: false, message: 'অবৈধ ওটিপি কোড! অনুগ্রহ করে ৬-সংখ্যার যাচাইকরণ কোড প্রদান করুন।' };
+  // Verify simulated OTP (must be strictly 6 numeric digits, preventing injection or bypass)
+  if (!params.simulatedOtp || !isValidOtp(params.simulatedOtp)) {
+    return { success: false, message: 'অবৈধ ওটিপি কোড! অনুগ্রহ করে সঠিক ৬-সংখ্যার যাচাইকরণ কোড প্রদান করুন।' };
   }
 
-  const idx = poaStore.findIndex(p => p.id === params.poaId);
+  const cleanPoaId = sanitizeString(params.poaId, 50);
+  const idx = poaStore.findIndex(p => p.id === cleanPoaId);
   if (idx === -1) {
     return { success: false, message: 'আমমোক্তারনামা রেকর্ড পাওয়া যায়নি।' };
   }
+
+  const cleanDeedNo = sanitizeString(params.revocationDeedNo, 100);
+  const cleanReasonBn = sanitizeString(params.reasonBn, 500);
+  const cleanReasonEn = sanitizeString(params.reasonEn, 500);
+  const cleanActorId = sanitizeString(params.actorId || 'OFFICER-AC-LAND', 50);
 
   const current = poaStore[idx];
   const updated: PowerOfAttorneyRecord = {
     ...current,
     status: 'revoked',
     revocationNoticeDate: new Date().toISOString().split('T')[0],
-    revocationDeedNo: params.revocationDeedNo || `বাতিলনামা দলিল নং ${Math.floor(1000 + Math.random() * 9000)}/২০২৬`,
-    revocationReasonBn: params.reasonBn,
-    revocationReasonEn: params.reasonEn,
+    revocationDeedNo: cleanDeedNo || `বাতিলনামা দলিল নং ${Math.floor(1000 + Math.random() * 9000)}/২০২৬`,
+    revocationReasonBn: cleanReasonBn,
+    revocationReasonEn: cleanReasonEn,
   };
 
   poaStore[idx] = updated;
@@ -326,7 +333,7 @@ export function executePoaRevocation(params: {
     eventType: 'POA_REVOKED',
     resourceType: 'poa',
     resourceId: current.id,
-    actorId: params.actorId,
+    actorId: cleanActorId,
     actorRole: 'AC_LAND',
     actionSummaryBn: `আমমোক্তারনামা ${current.id} (দলিল নং ${current.deedNo}) বাতিল ও প্রত্যাহার রেকর্ডভুক্তকরণ`,
     actionSummaryEn: `Power of Attorney ${current.id} formally revoked and barred from future transactions`,
@@ -335,7 +342,7 @@ export function executePoaRevocation(params: {
       deedNo: current.deedNo,
       principal: current.principalName,
       revocationDeed: updated.revocationDeedNo,
-      reason: params.reasonBn,
+      reason: cleanReasonBn,
     },
   });
 

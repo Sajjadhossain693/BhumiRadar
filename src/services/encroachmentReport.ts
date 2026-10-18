@@ -6,6 +6,13 @@
 import { plots } from '../data/seed';
 import type { Coordinates, Plot } from '../data/types';
 import { recordAuditEvent } from './auditLedger';
+import {
+  sanitizeString,
+  maskPhone,
+  isValidBangladeshPhone,
+  isValidBangladeshNid,
+  isWithinBangladeshBounds,
+} from './security';
 
 export type IncidentCategory =
   | 'khas_encroachment'
@@ -270,19 +277,50 @@ export function submitCitizenEncroachmentReport(params: {
 }): CitizenEncroachmentReport {
   const sequence = reportsStore.length + 1;
   const id = `CR-${new Date().getFullYear()}-${String(sequence).padStart(4, '0')}`;
-  const screening = screenLocationAgainstProtectedLand(params.coords);
+
+  // Sanitize all citizen-supplied text inputs to prevent XSS and buffer overflow
+  const cleanDescription = sanitizeString(params.description, 1000);
+  const cleanLocationName = sanitizeString(params.locationName, 200);
+  const cleanEvidenceFile = params.evidenceFileName ? sanitizeString(params.evidenceFileName, 120) : undefined;
+
+  // Validate coordinates: ensure finite and within Bangladesh bounds if provided
+  let validCoords: Coordinates | undefined = undefined;
+  if (
+    params.coords &&
+    typeof params.coords.lat === 'number' &&
+    typeof params.coords.lng === 'number' &&
+    Number.isFinite(params.coords.lat) &&
+    Number.isFinite(params.coords.lng)
+  ) {
+    validCoords = {
+      lat: Math.max(-90, Math.min(90, params.coords.lat)),
+      lng: Math.max(-180, Math.min(180, params.coords.lng)),
+    };
+  }
+
+  // Sanitize reporter information if not anonymous
+  let cleanReporterInfo = undefined;
+  if (!params.isAnonymous && params.reporterInfo) {
+    cleanReporterInfo = {
+      name: params.reporterInfo.name ? sanitizeString(params.reporterInfo.name, 100) : undefined,
+      phone: params.reporterInfo.phone ? sanitizeString(params.reporterInfo.phone, 20) : undefined,
+      nid: params.reporterInfo.nid ? sanitizeString(params.reporterInfo.nid, 25) : undefined,
+    };
+  }
+
+  const screening = screenLocationAgainstProtectedLand(validCoords);
 
   const newReport: CitizenEncroachmentReport = {
     id,
     createdAt: new Date().toISOString(),
     incidentDate: params.incidentDate || new Date().toISOString().split('T')[0],
     category: params.category,
-    description: params.description,
-    coords: params.coords,
-    locationName: params.locationName,
-    evidenceFileName: params.evidenceFileName,
+    description: cleanDescription,
+    coords: validCoords,
+    locationName: cleanLocationName,
+    evidenceFileName: cleanEvidenceFile,
     isAnonymous: params.isAnonymous,
-    reporterInfo: params.isAnonymous ? undefined : params.reporterInfo,
+    reporterInfo: cleanReporterInfo,
     screeningOutcome: screening.outcome,
     matchedPlotId: screening.matchedPlot?.id,
     matchedPlotDetails: screening.matchedPlot
@@ -298,12 +336,19 @@ export function submitCitizenEncroachmentReport(params: {
 
   reportsStore = [newReport, ...reportsStore];
 
+  // Whistleblower PII protection: Mask phone number in immutable cryptographic action ledger
+  const actorId = params.isAnonymous
+    ? 'CITIZEN-ANONYMOUS'
+    : cleanReporterInfo?.phone
+    ? `CITIZEN-${maskPhone(cleanReporterInfo.phone)}`
+    : 'CITIZEN-VERIFIED';
+
   // Record audit trail in Cryptographic Ledger
   recordAuditEvent({
     eventType: 'ENCROACHMENT_REPORTED',
     resourceType: 'encroachment_report',
     resourceId: id,
-    actorId: params.isAnonymous ? 'CITIZEN-ANONYMOUS' : params.reporterInfo?.phone || 'CITIZEN-VERIFIED',
+    actorId,
     actorRole: 'CITIZEN',
     actionSummaryBn: `নাগরিক কর্তৃক খাসজমি/জলাশয় দখল সংক্রান্ত অভিযোগ দায়ের (ট্র্যাকিং আইডি: ${id})`,
     actionSummaryEn: `Citizen crowdsourced encroachment alert submitted (Tracking ID: ${id})`,
@@ -312,7 +357,7 @@ export function submitCitizenEncroachmentReport(params: {
       category: params.category,
       screeningOutcome: screening.outcome,
       matchedPlotId: screening.matchedPlot?.id,
-      hasCoords: !!params.coords,
+      hasCoords: !!validCoords,
     },
   });
 
@@ -329,13 +374,17 @@ export function updateReportStatusByOfficer(params: {
   const index = reportsStore.findIndex(r => r.id === params.reportId);
   if (index === -1) return null;
 
+  const cleanOfficerName = sanitizeString(params.officerName || 'OFFICER-AC-LAND', 100);
+  const cleanOfficerNotes = params.officerNotes !== undefined ? sanitizeString(params.officerNotes, 1000) : undefined;
+  const cleanResolution = params.resolutionSummary !== undefined ? sanitizeString(params.resolutionSummary, 1000) : undefined;
+
   const current = reportsStore[index];
   const updated: CitizenEncroachmentReport = {
     ...current,
     status: params.status,
-    assignedOfficer: params.officerName || current.assignedOfficer,
-    officerNotes: params.officerNotes !== undefined ? params.officerNotes : current.officerNotes,
-    resolutionSummary: params.resolutionSummary !== undefined ? params.resolutionSummary : current.resolutionSummary,
+    assignedOfficer: cleanOfficerName || current.assignedOfficer,
+    officerNotes: cleanOfficerNotes !== undefined ? cleanOfficerNotes : current.officerNotes,
+    resolutionSummary: cleanResolution !== undefined ? cleanResolution : current.resolutionSummary,
   };
 
   reportsStore[index] = updated;
@@ -345,7 +394,7 @@ export function updateReportStatusByOfficer(params: {
     eventType: params.status === 'resolved' ? 'ENCROACHMENT_RESOLVED' : 'ENCROACHMENT_INVESTIGATION_STARTED',
     resourceType: 'encroachment_report',
     resourceId: current.id,
-    actorId: params.officerName,
+    actorId: cleanOfficerName,
     actorRole: 'AC_LAND',
     actionSummaryBn: `ভূমি কর্মকর্তা কর্তৃক বেদখল রিপোর্ট ${current.id} এর স্থিতি পরিবর্তন: ${params.status}`,
     actionSummaryEn: `Officer updated encroachment alert ${current.id} status to ${params.status}`,
@@ -353,7 +402,7 @@ export function updateReportStatusByOfficer(params: {
       reportId: current.id,
       previousStatus: current.status,
       newStatus: params.status,
-      notes: params.officerNotes,
+      notes: cleanOfficerNotes,
     },
   });
 

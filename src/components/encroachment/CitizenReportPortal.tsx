@@ -41,9 +41,12 @@ export const CitizenReportPortal: React.FC = () => {
   // Success modal state
   const [submittedReport, setSubmittedReport] = useState<CitizenEncroachmentReport | null>(null);
 
-  // Triage state
+  // Triage state & RBAC Officer Gate
   const [reportsList, setReportsList] = useState<CitizenEncroachmentReport[]>(() => getAllCitizenReports());
   const [triageFilter, setTriageFilter] = useState<string>('ALL');
+  const [isOfficerAuthenticated, setIsOfficerAuthenticated] = useState<boolean>(false);
+  const [officerPinInput, setOfficerPinInput] = useState<string>('');
+  const [pinError, setPinError] = useState<string>('');
 
   // Real-time screening preview
   const spatialScreening = screenLocationAgainstProtectedLand({ lat, lng });
@@ -114,6 +117,18 @@ export const CitizenReportPortal: React.FC = () => {
     if (updated) {
       setReportsList(getAllCitizenReports());
       show('success', lang === 'bn' ? 'অভিযোগের অবস্থা আপডেট ও অডিটে সংরক্ষিত হয়েছে' : 'Status updated and audited');
+    }
+  };
+
+  const handleOfficerAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (officerPinInput.trim() === '1234') {
+      setIsOfficerAuthenticated(true);
+      setPinError('');
+      show('success', lang === 'bn' ? 'কর্মকর্তা হিসেবে সফলভাবে যাচাইকৃত' : 'Officer authenticated successfully');
+    } else {
+      setPinError(lang === 'bn' ? 'ভুল নিরাপত্তা পিন! অনুমতি অস্বীকৃত।' : 'Invalid security PIN! Access denied.');
+      show('error', lang === 'bn' ? 'ভুল নিরাপত্তা পিন!' : 'Invalid PIN!');
     }
   };
 
@@ -421,14 +436,64 @@ export const CitizenReportPortal: React.FC = () => {
         </div>
       )}
 
-      {/* MODE 3: Officer Triage & Review */}
-      {portalMode === 'triage' && (
+      {/* MODE 3: Officer Triage & Review with RBAC Authorization Gate */}
+      {portalMode === 'triage' && !isOfficerAuthenticated && (
+        <div style={{ marginTop: 24, padding: 24, border: '1px solid var(--border-color)', borderRadius: 10, background: 'var(--ink-50)', textAlign: 'center', maxWidth: 440, margin: '24px auto' }}>
+          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+            <I.shield size={24} style={{ color: 'var(--danger-600)' }} />
+          </div>
+          <h4 style={{ margin: '0 0 6px 0' }}>
+            {lang === 'bn' ? 'কর্মকর্তা নিরাপত্তা যাচাইকরণ' : 'Officer Security Verification'}
+          </h4>
+          <p className="muted text-sm" style={{ margin: '0 0 16px 0' }}>
+            {lang === 'bn' ? 'নাগরিক অভিযোগ ট্রায়াজ ও তদন্ত আদেশ কেবল অনুমোদিত রাজস্ব কর্মকর্তার জন্য সংরক্ষিত।' : 'Citizen complaint triage is restricted to authorized Revenue Officers.'}
+          </p>
+
+          <form onSubmit={handleOfficerAuth}>
+            <div className="mb-12">
+              <input
+                type="password"
+                className="input text-center font-mono"
+                placeholder={lang === 'bn' ? 'অফিসার পিন কোড লিখুন (ডেমো: 1234)' : 'Enter Officer PIN (Demo: 1234)'}
+                value={officerPinInput}
+                onChange={e => setOfficerPinInput(e.target.value)}
+                maxLength={8}
+                autoFocus
+              />
+              {pinError && <div style={{ color: 'var(--danger-600)', fontSize: '0.8rem', marginTop: 4 }}>{pinError}</div>}
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+              <I.lock size={16} /> {lang === 'bn' ? 'প্রবেশ অনুমোদন করুন' : 'Authenticate Access'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* MODE 3: Authenticated Officer Triage View */}
+      {portalMode === 'triage' && isOfficerAuthenticated && (
         <div style={{ marginTop: 16 }}>
           <div className="row justify-between mb-12" style={{ alignItems: 'center' }}>
-            <span className="muted text-sm">
-              {lang === 'bn' ? 'নাগরিকদের দাখিলকৃত রিপোর্ট পর্যালোচনা, মাঠপর্যায়ে তদন্ত আদেশ ও অডিট লেজার ট্র্যাকিং' : 'Citizen report triage and officer action desk'}
-            </span>
-            <span className="badge badge-outline">{reportsList.length} {lang === 'bn' ? 'টি রিপোর্ট' : 'reports'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>
+                <I.shield size={12} /> {lang === 'bn' ? 'যাচাইকৃত কর্মকর্তা: এসি ল্যান্ড' : 'Verified: AC Land'}
+              </span>
+              <span className="muted text-sm">
+                {lang === 'bn' ? 'নাগরিকদের দাখিলকৃত রিপোর্ট পর্যালোচনা ও মাঠপর্যায়ে তদন্ত আদেশ' : 'Citizen report triage and officer action desk'}
+              </span>
+            </div>
+            <div className="row gap-8" style={{ alignItems: 'center' }}>
+              <span className="badge badge-outline">{reportsList.length} {lang === 'bn' ? 'টি রিপোর্ট' : 'reports'}</span>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => {
+                  setIsOfficerAuthenticated(false);
+                  setOfficerPinInput('');
+                  show('info', lang === 'bn' ? 'লগআউট সম্পন্ন' : 'Logged out');
+                }}
+              >
+                <I.lock size={14} /> {lang === 'bn' ? 'লক করুন' : 'Lock Desk'}
+              </button>
+            </div>
           </div>
 
           <div style={{ overflowX: 'auto' }}>

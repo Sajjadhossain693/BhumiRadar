@@ -37,9 +37,9 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
   const plotDeeds = deeds[plot.id] || [];
   const encumbrance = plot.encumbrance;
 
-  // Generate QR
+  // Generate QR with safely encoded URL query parameters
   useEffect(() => {
-    const url = `https://bhumi-radar.gov.bd/verify?r=${reportId}&p=${plot.id}&t=${Date.now()}`;
+    const url = `https://bhumi-radar.gov.bd/verify?r=${encodeURIComponent(reportId)}&p=${encodeURIComponent(plot.id)}&t=${Date.now()}`;
     QRCode.toDataURL(url, { width: 160, margin: 1, color: { dark: '#0a4d24', light: '#ffffff' } })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(''));
