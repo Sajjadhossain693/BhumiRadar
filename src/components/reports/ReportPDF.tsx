@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import { useI18n } from '../../i18n/provider';
 import { BilingualName } from '../ui/StatusBadge';
 import { I } from '../ui/Icons';
-import { deeds, plots } from '../../data/seed';
+import { deeds, plots, litigation } from '../../data/seed';
 import type { Plot } from '../../data/types';
 import { useToast } from '../ui/Toaster';
 
@@ -173,6 +173,32 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
             )}
           </tbody>
         </table>
+
+        {/* Litigation Lock Notice if locked */}
+        {(() => {
+          const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(plot.id)) || (plot.status === 'locked' ? litigation[0] : null);
+          if (!activeLock && plot.status !== 'locked') return null;
+          return (
+            <div style={{
+              background: '#f5f3ff',
+              border: '1.5px solid #7c3aed',
+              borderRadius: 6,
+              padding: '8px 12px',
+              margin: '10px 0',
+              fontSize: '9.5pt',
+            }}>
+              <div style={{ color: '#5b21b6', fontWeight: 700, marginBottom: 2 }}>
+                🔒 {t('lit.lockActiveNotice')} — {t('lit.caseNo')}: {activeLock?.caseNo || 'WP-4521/2024'} ({activeLock?.court || 'High Court Division'})
+              </div>
+              <div style={{ color: '#4c1d95', fontSize: '9pt' }}>
+                {t('lit.orderType')}: {activeLock ? t(`lit.orderType.${activeLock.orderType}`) : t('lit.orderType.injunction')} • {t('lit.lockDate')}: {activeLock?.lockDate} • {activeLock?.remarks}
+              </div>
+              <div style={{ color: '#b91c1c', fontWeight: 700, fontSize: '9pt', marginTop: 3 }}>
+                ⛔ {t('lit.transferProhibited')}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Warning */}
         <div className="report-warning">

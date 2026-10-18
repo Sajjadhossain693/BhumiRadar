@@ -3,9 +3,10 @@ import { useI18n } from '../../i18n/provider';
 import { I } from './Icons';
 import type { Plot, UnusualActivity } from '../../data/types';
 import { BilingualName } from './StatusBadge';
+import { litigation, liens } from '../../data/seed';
 
 type Layer = 'cadastral' | 'osm' | 'satellite' | 'erosion';
-type OwnershipFilter = 'all' | 'khas' | 'malikana' | 'unusual';
+type OwnershipFilter = 'all' | 'khas' | 'malikana' | 'locked' | 'unusual';
 
 type Props = {
   plots: Plot[];
@@ -51,11 +52,14 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
 
   const w = 900, h = Math.round(height);
 
-  // Filter plots based on ownership / anomaly filter
+  // Filter plots based on ownership / anomaly / lock filter
   const filteredPlots = useMemo(() => {
     return plots.filter(p => {
       if (ownershipFilter === 'khas') return p.ownershipType === 'khas';
       if (ownershipFilter === 'malikana') return p.ownershipType === 'malikana';
+      if (ownershipFilter === 'locked') {
+        return p.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(p.id));
+      }
       if (ownershipFilter === 'unusual') return Boolean(p.unusualActivity || (simulatedAlert && simulatedAlert.plotId === p.id));
       return true;
     });
@@ -183,25 +187,35 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
       const isSelected = p.id === selectedId;
 
       // Color scheme:
+      const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(p.id)) || (p.status === 'locked' ? litigation[0] : null);
+      const isLocked = Boolean(activeLock || p.status === 'locked');
+
+      // Color scheme:
       // Anomaly: Bright Red pulse
+      // Locked: Royal Purple
       // Khas: Golden Amber
       // Malikana: Emerald Green
-      const color = hasAnomaly ? '#dc2626' : isKhas ? '#d97706' : '#059669';
-      const fillColor = hasAnomaly ? '#ef4444' : isKhas ? '#f59e0b' : '#10b981';
+      const color = hasAnomaly ? '#dc2626' : isLocked ? '#7c3aed' : isKhas ? '#d97706' : '#059669';
+      const fillColor = hasAnomaly ? '#ef4444' : isLocked ? '#8b5cf6' : isKhas ? '#f59e0b' : '#10b981';
 
       const polygon = L.polygon(latlngs, {
         color: color,
-        weight: hasAnomaly ? 4 : isSelected ? 3.5 : 2,
+        weight: hasAnomaly ? 4 : isLocked ? 3.5 : isSelected ? 3.5 : 2,
         fillColor: fillColor,
-        fillOpacity: hasAnomaly ? 0.5 : isKhas ? 0.35 : 0.25,
-        dashArray: hasAnomaly ? '6, 4' : isKhas ? '5, 5' : undefined,
+        fillOpacity: hasAnomaly ? 0.5 : isLocked ? 0.4 : isKhas ? 0.35 : 0.25,
+        dashArray: hasAnomaly ? '6, 4' : isLocked ? '4, 4' : isKhas ? '5, 5' : undefined,
       });
 
-      // Mark the land with permanent tooltip when anomaly or selected
+      // Mark the land with permanent tooltip when anomaly or locked
       if (hasAnomaly) {
         polygon.bindTooltip(
           `<div style="font-weight:700; color:#b91c1c; font-size:11.5px; padding:2px;">🚨 ${lang === 'bn' ? 'অস্বাভাবিক দাগ' : 'Alert Dag'} ${p.dag} (${p.areaShotok} ${t('units.shotok')})</div>`,
           { permanent: true, direction: 'top', className: 'anomaly-tooltip' }
+        );
+      } else if (isLocked) {
+        polygon.bindTooltip(
+          `<div style="font-weight:700; color:#ffffff; font-size:11px; padding:2px; background:#7c3aed; border-radius:4px;">🔒 ${lang === 'bn' ? 'লককৃত দাগ' : 'Locked Dag'} ${p.dag}</div>`,
+          { permanent: true, direction: 'top' }
         );
       } else {
         polygon.bindTooltip(
@@ -211,20 +225,46 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
       }
 
       const popupContent = `
-        <div style="font-family: inherit; font-size: 13px; line-height: 1.5; min-width: 200px;">
+        <div style="font-family: inherit; font-size: 13px; line-height: 1.5; min-width: 220px;">
           <div style="font-weight: 700; color: ${color}; font-size: 14px; margin-bottom: 4px;">
-            ${hasAnomaly ? '🚨 ' + t('map.live.anomalyDetected') : isKhas ? '🏛️ ' + t('map.ownership.khas') : '👤 ' + t('map.ownership.malikana')}
+            ${hasAnomaly ? '🚨 ' + t('map.live.anomalyDetected') : isLocked ? '🔒 ' + t('lit.lockActiveNotice') : isKhas ? '🏛️ ' + t('map.ownership.khas') : '👤 ' + t('map.ownership.malikana')}
           </div>
           <div><b>${t('rep.dagLbl')}:</b> ${p.dag} (${p.id})</div>
           <div><b>${t('rep.khatianLbl')}:</b> ${p.khatian}</div>
           <div><b>${t('common.mouza')}:</b> ${lang === 'bn' ? p.mouzaBn : p.mouza}</div>
           <div><b>${t('common.area')}:</b> ${p.areaShotok} ${t('units.shotok')} (${p.areaDecimal} ${t('units.decimal')})</div>
+          ${isLocked && activeLock ? `
+            <div style="margin-top: 6px; padding: 6px 8px; background: #f5f3ff; border-left: 3px solid #7c3aed; color: #5b21b6; font-size: 11.5px; line-height: 1.4;">
+              <div><b>🔒 ${t('lit.title')}:</b> ${activeLock.caseNo}</div>
+              <div><b>${t('lit.court')}:</b> ${activeLock.court}</div>
+              <div><b>${t('lit.orderType')}:</b> ${t('lit.orderType.' + activeLock.orderType) || activeLock.orderType}</div>
+              <div style="color: #6d28d9; font-weight: 600; margin-top: 2px;">⛔ ${t('lit.transferProhibited')}</div>
+            </div>
+          ` : ''}
           ${hasAnomaly ? `<div style="margin-top: 6px; padding: 6px 8px; background: #fee2e2; border-left: 3px solid #dc2626; color: #991b1b; font-size: 12px; font-weight: 600;">⚠️ ${lang === 'bn' ? (p.unusualActivity?.titleBn || simulatedAlert?.titleBn) : (p.unusualActivity?.title || simulatedAlert?.title)}</div>` : ''}
         </div>
       `;
       polygon.bindPopup(popupContent);
       polygon.on('click', () => onSelect?.(p.id));
       plotLayers.addLayer(polygon);
+
+      // Centroid marker for locked plots (if not anomaly)
+      if (isLocked && !hasAnomaly) {
+        const center = [p.coords.lat, p.coords.lng];
+        const lockIcon = L.divIcon({
+          className: 'leaflet-lock-badge',
+          html: `
+            <div style="background: #7c3aed; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.35); cursor: pointer;">
+              🔒 ${lang === 'bn' ? 'লক' : 'Locked'} ${p.dag}
+            </div>
+          `,
+          iconSize: [24, 20],
+          iconAnchor: [12, 10],
+        });
+        const marker = L.marker(center, { icon: lockIcon });
+        marker.on('click', () => focusPlot(p.id));
+        plotLayers.addLayer(marker);
+      }
 
       // Centroid pulsating marker for anomalies
       if (hasAnomaly) {
@@ -318,6 +358,12 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
             className={`map-pill malikana-pill ${ownershipFilter === 'malikana' ? 'active' : ''}`}
           >
             {t('map.filter.malikana')} ({plots.filter(p => p.ownershipType === 'malikana').length})
+          </button>
+          <button
+            onClick={() => setOwnershipFilter('locked')}
+            className={`map-pill locked-pill ${ownershipFilter === 'locked' ? 'active' : ''}`}
+          >
+            {t('map.filter.locked')} ({plots.filter(p => p.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(p.id))).length})
           </button>
           <button
             onClick={() => setOwnershipFilter('unusual')}
@@ -624,6 +670,10 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
               <span>👤 {t('map.legend.malikana')}</span>
             </div>
             <div className="map-legend__item">
+              <span className="map-legend__swatch" style={{ background: '#8b5cf6', borderColor: '#7c3aed' }} />
+              <span>🔒 {t('map.legend.locked')}</span>
+            </div>
+            <div className="map-legend__item">
               <span className="map-legend__swatch" style={{ background: '#ef4444', borderColor: '#dc2626' }} />
               <span>🚨 {t('map.legend.unusual')}</span>
             </div>
@@ -632,19 +682,19 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
 
         {/* Selected Plot Full Land Inspector Popup */}
         {selected && (
-          <div className="map-popup" style={{ zIndex: 10, maxWidth: 340 }} role="status">
+          <div className="map-popup" style={{ zIndex: 10, maxWidth: 350 }} role="status">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
               <h4 style={{ margin: 0, fontSize: '0.95rem' }}>{selected.id} · {t('rep.dagLbl')} {selected.dag}</h4>
               <span
                 className="chip"
                 style={{
-                  background: selected.unusualActivity ? '#fee2e2' : selected.ownershipType === 'khas' ? '#fef3c7' : '#d1fae5',
-                  color: selected.unusualActivity ? '#b91c1c' : selected.ownershipType === 'khas' ? '#92400e' : '#065f46',
+                  background: selected.unusualActivity ? '#fee2e2' : (selected.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(selected.id))) ? '#f5f3ff' : selected.ownershipType === 'khas' ? '#fef3c7' : '#d1fae5',
+                  color: selected.unusualActivity ? '#b91c1c' : (selected.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(selected.id))) ? '#6d28d9' : selected.ownershipType === 'khas' ? '#92400e' : '#065f46',
                   fontWeight: 700,
                   fontSize: '0.72rem',
                 }}
               >
-                {selected.unusualActivity ? `🚨 ${lang === 'bn' ? 'অস্বাভাবিক' : 'Anomaly'}` : selected.ownershipType === 'khas' ? `🏛️ ${t('map.ownership.khas')}` : `👤 ${t('map.ownership.malikana')}`}
+                {selected.unusualActivity ? `🚨 ${lang === 'bn' ? 'অস্বাভাবিক' : 'Anomaly'}` : (selected.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(selected.id))) ? `🔒 ${t('lit.regOnHold')}` : selected.ownershipType === 'khas' ? `🏛️ ${t('map.ownership.khas')}` : `👤 ${t('map.ownership.malikana')}`}
               </span>
             </div>
 
@@ -686,6 +736,60 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                 <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}>
                   {t(`map.khasClass.${selected.khasClassification}`)}
                 </span>
+              </div>
+            )}
+
+            {/* If Selected plot has active litigation lock */}
+            {(() => {
+              const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(selected.id)) || (selected.status === 'locked' ? litigation[0] : null);
+              if (!activeLock && selected.status !== 'locked') return null;
+              return (
+                <div style={{
+                  marginTop: 8,
+                  padding: '8px 10px',
+                  background: '#f5f3ff',
+                  border: '1.5px solid #7c3aed',
+                  borderRadius: 6,
+                  fontSize: '0.8rem',
+                }}>
+                  <div style={{ color: '#5b21b6', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <span>🔒</span>
+                    <span>{t('lit.lockActiveNotice')}</span>
+                    <span className="badge" style={{ background: '#7c3aed', color: '#fff', fontSize: '10px', marginLeft: 'auto' }}>
+                      {activeLock ? t(`lit.orderType.${activeLock.orderType}`) || activeLock.orderType : t('common.status.locked')}
+                    </span>
+                  </div>
+                  <div style={{ color: '#4c1d95', fontSize: '0.75rem', lineHeight: 1.5 }}>
+                    <div><b>{t('lit.caseNo')}:</b> <span className="mono">{activeLock?.caseNo || 'WP-4521/2024'}</span></div>
+                    <div><b>{t('lit.court')}:</b> {activeLock?.court || 'High Court Division'}</div>
+                    <div><b>{t('lit.lockDate')}:</b> <span className="mono">{activeLock?.lockDate || '2024-02-18'}</span></div>
+                    {activeLock?.remarks && <div><b>{t('lit.cause')}:</b> {activeLock.remarks}</div>}
+                  </div>
+                  <div style={{ marginTop: 6, padding: '3px 6px', background: '#ede9fe', borderRadius: 4, color: '#6d28d9', fontSize: '0.72rem', fontWeight: 600 }}>
+                    ⛔ {t('lit.transferProhibited')}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* If Selected plot has bank lien / encumbrance */}
+            {selected.encumbrance && (
+              <div style={{
+                marginTop: 6,
+                padding: '6px 10px',
+                background: '#fffbeb',
+                border: '1px solid #f59e0b',
+                borderRadius: 6,
+                fontSize: '0.76rem',
+                color: '#92400e',
+              }}>
+                <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🏦</span>
+                  <span>{t('lien.title') || 'ব্যাংক বন্ধক (Lien)'}: {selected.encumbrance.bank}</span>
+                </div>
+                <div style={{ marginTop: 2, fontSize: '0.73rem' }}>
+                  {t('common.amount')}: <b>৳ {selected.encumbrance.amount.toLocaleString()}</b> • {t('common.since')}: {selected.encumbrance.since}
+                </div>
               </div>
             )}
 

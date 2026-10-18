@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useI18n } from '../i18n/provider';
 import { I } from '../components/ui/Icons';
 import { BilingualName, StatusBadge } from '../components/ui/StatusBadge';
-import { districts, upazilasByDistrict, mouzasByUpazila, plots } from '../data/seed';
+import { districts, upazilasByDistrict, mouzasByUpazila, plots, litigation } from '../data/seed';
 import { useToast } from '../components/ui/Toaster';
 import { MapView } from '../components/ui/MapView';
 
@@ -104,6 +104,24 @@ export const CitizenVerification: React.FC<{ onSelectPlot: (id: string | null) =
                     <span className="text-sm"><BilingualName en={p.owner.name} bn={p.owner.nameBn} /></span>
                     <span className="chip brand">{p.areaShotok} {t('units.shotok')}</span>
                   </div>
+                  {(() => {
+                    const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(p.id)) || (p.status === 'locked' ? litigation[0] : null);
+                    if (!activeLock && p.status !== 'locked') return null;
+                    return (
+                      <div style={{ marginTop: 8, padding: '6px 10px', background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: 6, fontSize: '0.78rem', color: '#5b21b6' }}>
+                        <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span>🔒</span>
+                          <span>{t('lit.lockActiveNotice')}: {activeLock?.caseNo || 'WP-4521/2024'}</span>
+                        </div>
+                        <div style={{ color: '#6d28d9', fontSize: '0.72rem', marginTop: 2 }}>
+                          {activeLock?.court} • {t('lit.orderType')}: {activeLock ? t(`lit.orderType.${activeLock.orderType}`) : t('lit.orderType.injunction')}
+                        </div>
+                        <div style={{ color: '#b91c1c', fontSize: '0.72rem', fontWeight: 600, marginTop: 2 }}>
+                          ⛔ {t('lit.transferProhibited')}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </button>
               ))}
             </div>

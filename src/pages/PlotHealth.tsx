@@ -3,7 +3,7 @@ import { useI18n } from '../i18n/provider';
 import { I } from '../components/ui/Icons';
 import { ScoreRing } from '../components/ui/ScoreRing';
 import { StatusBadge, BilingualName } from '../components/ui/StatusBadge';
-import { deeds, plots } from '../data/seed';
+import { deeds, plots, litigation } from '../data/seed';
 
 export const PlotHealth: React.FC<{ plotId: string | null; onSelectPlot: (id: string | null) => void }> = ({ plotId, onSelectPlot }) => {
   const { t } = useI18n();
@@ -41,6 +41,37 @@ export const PlotHealth: React.FC<{ plotId: string | null; onSelectPlot: (id: st
           </select>
         </div>
       </div>
+
+      {/* Litigation Lock Notice Banner */}
+      {(() => {
+        const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(selected.id)) || (selected.status === 'locked' ? litigation[0] : null);
+        if (!activeLock && selected.status !== 'locked') return null;
+        return (
+          <div className="card mb-16" style={{ background: '#f5f3ff', border: '2px solid #7c3aed', padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '1.4rem' }}>🔒</span>
+                <div>
+                  <h4 style={{ margin: 0, color: '#5b21b6' }}>
+                    {t('lit.lockActiveNotice')} — {t('lit.caseNo')}: {activeLock?.caseNo || 'WP-4521/2024'}
+                  </h4>
+                  <div style={{ fontSize: '0.85rem', color: '#4c1d95', marginTop: 2 }}>
+                    {activeLock?.court} • {t('lit.orderType')}: {activeLock ? t(`lit.orderType.${activeLock.orderType}`) : t('lit.orderType.injunction')} • {t('lit.lockDate')}: {activeLock?.lockDate}
+                  </div>
+                </div>
+              </div>
+              <span className="badge" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>
+                ⛔ {t('lit.transferProhibited')}
+              </span>
+            </div>
+            {activeLock?.remarks && (
+              <div style={{ marginTop: 8, padding: '6px 10px', background: '#ede9fe', borderRadius: 6, fontSize: '0.82rem', color: '#5b21b6' }}>
+                <b>{t('lit.cause')}:</b> {activeLock.remarks}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       <div className="grid grid-3 mb-16" style={{ gridTemplateColumns: '320px 1fr 1fr' }}>
         <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 24 }}>

@@ -529,8 +529,14 @@ export const en: Dict = {
   'map.legend.khas': 'Govt Khas Land',
   'map.legend.malikana': 'Private Malikana Land',
   'map.legend.unusual': 'Unusual Activity / Anomaly',
+  'map.legend.locked': 'Litigation Locked Land',
+  'map.filter.locked': '🔒 Litigation Locked',
   'map.fullLandView': 'Full Land View',
   'map.nationalView': 'National View',
+  'lit.lockActiveNotice': 'Litigation Registration Lock Active',
+  'lit.transferProhibited': 'Deed registration, mutation & transfer strictly prohibited',
+  'lit.dossierTitle': 'Court Order & Lock Details Dossier',
+  'lit.viewDetails': 'View Lock Details',
 
   // ===== Reports – sample =====
   'rep.warningLabel': 'Warning',

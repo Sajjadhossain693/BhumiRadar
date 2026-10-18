@@ -529,8 +529,14 @@ export const bn: Dict = {
   'map.legend.khas': 'সরকারি খাসজমি',
   'map.legend.malikana': 'ব্যক্তি মালিকানা জমি',
   'map.legend.unusual': 'অস্বাভাবিক কার্যকলাপ / ঝুঁকি',
+  'map.legend.locked': 'নিবন্ধন লককৃত জমি',
+  'map.filter.locked': '🔒 নিবন্ধন লককৃত',
   'map.fullLandView': 'জমির পূর্ণাঙ্গ ভিউ',
   'map.nationalView': 'সমগ্র বাংলাদেশ',
+  'lit.lockActiveNotice': 'মামলা-সংক্রান্ত নিবন্ধন লক সক্রিয়',
+  'lit.transferProhibited': 'দলিল নিবন্ধন, নামজারি ও জমি হস্তান্তর সম্পূর্ণ স্থগিত',
+  'lit.dossierTitle': 'আদালতের আদেশ ও লকের বিস্তারিত বিবরণ',
+  'lit.viewDetails': 'লকের তথ্য দেখুন',
 
   // ===== Reports – sample =====
   'rep.warningLabel': 'সতর্কতা',
