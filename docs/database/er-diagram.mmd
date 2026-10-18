@@ -1,0 +1,149 @@
+erDiagram
+  PLOT ||--|| OWNER : "owned_by"
+  PLOT ||--o{ DEED : "historical_transfers"
+  PLOT ||--o{ LITIGATION_CASE : "locked_under"
+  PLOT ||--o{ BANK_LIEN : "encumbered_by"
+  PLOT ||--o{ ENCROACHMENT_ALERT : "flagged_by"
+  PLOT ||--o{ CITIZEN_ENCROACHMENT_REPORT : "spatially_matched"
+  PLOT ||--o{ COMPENSATION_CLAIM : "acquired_for"
+  PLOT ||--o{ POWER_OF_ATTORNEY : "authorized_in"
+
+  ACQUISITION_PROJECT ||--o{ COMPENSATION_CLAIM : "generates_awards"
+  MOUZA_RATE_RECORD ||--o{ PLOT : "sets_minimum_rate"
+
+  AUDIT_EVENT }o--|| AUDIT_EVENT : "previousHash_chain"
+  AUDIT_EVENT ||--o| PLOT : "audits_action"
+  AUDIT_EVENT ||--o| POWER_OF_ATTORNEY : "audits_poa"
+  AUDIT_EVENT ||--o| COMPENSATION_CLAIM : "audits_disbursement"
+  AUDIT_EVENT ||--o| CITIZEN_ENCROACHMENT_REPORT : "audits_triage"
+
+  PLOT {
+    string id PK "PLT-DHK-001"
+    string khatian "KH-1284"
+    string dag "88/88"
+    string district "Dhaka"
+    string upazila "Uttara"
+    string mouza "uttara-sector4"
+    float areaDecimal "16.50"
+    string ownershipType "khas or malikana"
+    string landClass "residential, commercial, agricultural"
+    int riskScore "0-100 score"
+    string status "active, locked, encroached, disputed"
+    float erosion "percentage eroded"
+  }
+
+  OWNER {
+    string id PK
+    string name "Abdul Karim"
+    string nameBn "আব্দুল করিম"
+    string nid "198512345678"
+    string fatherName "Late Rahim Uddin"
+  }
+
+  DEED {
+    string no PK "D-1994-4412"
+    string date "1994-06-12"
+    string type "sale, inheritance, gift"
+    string from "Previous Owner"
+    string to "Current Owner"
+    string status "cleared, flagged"
+  }
+
+  LITIGATION_CASE {
+    string id PK "LIT-2024-001"
+    string caseNo "WP-4521/2024"
+    string court "High Court Division"
+    string petitioner "Govt of Bangladesh"
+    string respondent "Private Developer"
+    string orderType "stay, injunction, attachment"
+    string lockDate "2024-08-14"
+    string status "active, released"
+  }
+
+  BANK_LIEN {
+    string id PK "LIEN-001"
+    string bank "Agrani Bank PLC"
+    string branch "Principal Branch"
+    string borrower "Abdul Karim"
+    float amount "2500000"
+    float outstanding "1850000"
+    string status "active, released"
+  }
+
+  ENCROACHMENT_ALERT {
+    string id PK "ENC-001"
+    string plotId FK
+    string level "high, medium, low"
+    string detectedOn "2026-02-14"
+    string evidence "satellite, sensor, photo"
+    string sensorId "SNS-RJS-014"
+    string location "Dhamrai, Dhaka"
+  }
+
+  CITIZEN_ENCROACHMENT_REPORT {
+    string id PK "CR-2026-0042"
+    string createdAt "ISO timestamp"
+    string category "khas_encroachment, canal_filling"
+    string description "Landfilling observed"
+    float latitude "23.921500"
+    float longitude "90.174000"
+    boolean isAnonymous "true / false"
+    string screeningOutcome "potential_geographic_match"
+    string status "submitted, field_verification, resolved"
+  }
+
+  MOUZA_RATE_RECORD {
+    string id PK "SCH-DHK-UTT-01"
+    string divisionId "dhaka"
+    string districtId "dhaka"
+    string upazilaId "uttara"
+    string mouzaId "uttara-sector4"
+    int effectiveYear "2026"
+    string sourceGazette "Official Gazette SRO-881"
+    float commercialRate "3800000"
+    float residentialRate "2600000"
+    float agriculturalRate "1200000"
+  }
+
+  ACQUISITION_PROJECT {
+    string id PK "PRJ-DHK-ASH-01"
+    string nameBn "ঢাকা-আশুলিয়া এলিভেটেড এক্সপ্রেসওয়ে"
+    string acquiringBody "Bangladesh Bridge Authority"
+    string defaultPurpose "public_government"
+    float statutoryMultiplier "3.0 (200% premium)"
+  }
+
+  COMPENSATION_CLAIM {
+    string id PK "LA-DHK-2026-0042"
+    string projectId FK
+    string claimantName "Abul Kashem"
+    string claimantNid "19782692015487"
+    string bankAccountNo "2050189020014"
+    float totalCompensationAmount "69482500"
+    string status "submitted, approved, payment_confirmed"
+    string paymentReference "G2P-EFT-2026-881204"
+  }
+
+  POWER_OF_ATTORNEY {
+    string id PK "POA-2024-DHK-0914"
+    string deedNo "5611/2024"
+    string subRegistryOfficeBn "Uttara Sub-Registry"
+    string poaType "general, special, irrevocable"
+    string principalNidMasked "1985********5678"
+    string attorneyNidMasked "1990********2345"
+    string permittedScope "sale, mortgage, mutation"
+    string status "active, revoked, suspended"
+  }
+
+  AUDIT_EVENT {
+    string id PK "EVT-2026-0043"
+    int sequence "Continuous incrementing index"
+    string timestamp "ISO UTC"
+    string eventType "PLOT_LOCKED, POA_REVOKED, VALUATION_APPLIED"
+    string resourceType "plot, poa, compensation_claim"
+    string resourceId "PLT-DHK-001"
+    string actorId "OFFICER-ACL-01"
+    string actorRole "AC_LAND, SUB_REGISTRAR, CITIZEN"
+    string previousHash "SHA-256 of Block n-1"
+    string currentHash "SHA-256 of Block n"
+  }

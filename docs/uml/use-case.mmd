@@ -1,0 +1,66 @@
+flowchart LR
+  %% Actors
+  Citizen(["Citizen / Buyer<br/>(সাধারণ নাগরিক / ক্রেতা)"])
+  Officer(["Land Officer (AC Land / Kanungo)<br/>(ভূমি কর্মকর্তা)"])
+  SubRegistrar(["Sub-Registrar<br/>(সাব-রেজিস্ট্রার)"])
+  SystemSentinel(["Automated Sentinel<br/>(স্যাটেলাইট ও আইওটি)"])
+
+  subgraph SystemBoundary ["BhumiRadar Land Governance & Transparency Portal"]
+    %% Citizen Use Cases
+    UC_Search["Search Plot & View 100-Point Land Health Score"]
+    UC_Report["Report Suspected Encroachment ('খাসজমি রক্ষা করুন')<br/>with Device GPS & Anonymity"]
+    UC_Track["Track Public Status of Citizen Report by Tracking ID"]
+    UC_Valuation["Estimate Statutory Registration Fees & Verify Mouza Rate"]
+    UC_CompClaim["Submit Statutory Land Acquisition Claim (2017 Act)"]
+    UC_PrintCert["Download/Print Official Land Health Certificate & Deed Chain"]
+
+    %% Officer Use Cases
+    UC_Investigate["Conduct Officer Land Audit & Zoning Verification"]
+    UC_LockPlot["Impose / Revoke Plot Registration Lock"]
+    UC_Triage["Triage Citizen Encroachment Alerts & Dispatch Field Team"]
+    UC_ApproveAward["Assess & Approve Land Acquisition Award"]
+    UC_DisburseEFT["Simulate G2P Direct EFT Payment Disbursement"]
+    UC_VerifyLedger["Verify Cryptographic Ledger Integrity (SHA-256 Chain)"]
+
+    %% Sub-Registrar Use Cases
+    UC_PoAGate["Execute Pre-Registration PoA Validity Gate Check"]
+    UC_RevokePoA["Execute Formal PoA Revocation with OTP Authentication"]
+    UC_CheckEvasion["Detect Undervaluation & Enforce Minimum Mouza Rates"]
+
+    %% System Sentinel Use Cases
+    UC_SatelliteDetect["Analyze Multi-Temporal Satellite Imagery & Spectral Indices"]
+    UC_IoTDetect["Trigger Boundary Motion Sensor Alert (e.g., SNS-RJS-014)"]
+    UC_AppendLedger["Append Canonical Decision Hash to Immutable Ledger"]
+  end
+
+  %% Citizen Links
+  Citizen --> UC_Search
+  Citizen --> UC_Report
+  Citizen --> UC_Track
+  Citizen --> UC_Valuation
+  Citizen --> UC_CompClaim
+  Citizen --> UC_PrintCert
+
+  %% Officer Links
+  Officer --> UC_Investigate
+  Officer --> UC_LockPlot
+  Officer --> UC_Triage
+  Officer --> UC_ApproveAward
+  Officer --> UC_DisburseEFT
+  Officer --> UC_VerifyLedger
+
+  %% Sub-Registrar Links
+  SubRegistrar --> UC_PoAGate
+  SubRegistrar --> UC_RevokePoA
+  SubRegistrar --> UC_CheckEvasion
+
+  %% System Links
+  SystemSentinel --> UC_SatelliteDetect
+  SystemSentinel --> UC_IoTDetect
+  SystemSentinel --> UC_AppendLedger
+
+  %% Includes & Extends
+  UC_LockPlot -.->|<<includes>>| UC_AppendLedger
+  UC_ApproveAward -.->|<<includes>>| UC_AppendLedger
+  UC_RevokePoA -.->|<<includes>>| UC_AppendLedger
+  UC_Report -.->|<<includes>>| UC_AppendLedger

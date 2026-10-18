@@ -1,0 +1,45 @@
+flowchart TD
+  Start(["Start: Land Record Verification & Governance Workflow"]) --> Input["User Enters Location, Dag No, or Khatian No"]
+  
+  Input --> QueryPlot["Query Land Record Database & Cadastral Boundaries"]
+  
+  QueryPlot --> DecisionLitigation{"Is Plot Subject to Court Stay Order / Injunction?"}
+  
+  DecisionLitigation -- "Yes" --> FlagLitigation["Flag Active Litigation Lock<br/>(Registration & Mutation Suspended)"]
+  DecisionLitigation -- "No" --> DecisionKhas{"Is Plot Registered as Government Khas / Wetland?"}
+  
+  FlagLitigation --> HealthScore
+  
+  DecisionKhas -- "Yes" --> FlagKhas["Flag 1-No. Khas Property<br/>(Private Transfer Prohibited by Law)"]
+  DecisionKhas -- "No" --> DecisionLien{"Is There an Active Bank Mortgage / Lien?"}
+  
+  FlagKhas --> HealthScore
+  
+  DecisionLien -- "Yes" --> FlagLien["Flag Bank Lien & Outstanding Encumbrance"]
+  DecisionLien -- "No" --> AuditChain["Execute 4-Tier Title Heritage Audit (CS 1940 > SA 1962 > RS 1988 > BS Present)"]
+  
+  FlagLien --> HealthScore
+  AuditChain --> HealthScore["Calculate Multi-Dimensional 100-Point Land Health Score"]
+  
+  HealthScore --> TransactionStage["Proposed Land Transaction / Deed Registration Stage"]
+  
+  TransactionStage --> ValuationCheck["Valuation Engine: Query Official Minimum Mouza Rate Schedule"]
+  ValuationCheck --> ComparePrice{"Declared Price < Official Minimum Rate?"}
+  
+  ComparePrice -- "Yes (Undervalued)" --> BlockEvasion["Raise Revenue Evasion Alert<br/>Deed Stamping Blocked at Below-Minimum Value<br/>Set Official Minimum as Mandatory Tax Base"]
+  ComparePrice -- "No (Compliant)" --> CalcTaxes["Calculate Statutory Fee Breakdown<br/>(Stamp Duty 1.5%, Reg Fee 2%, Local Tax 2%, AIT 53H)"]
+  
+  BlockEvasion --> PoACheck
+  CalcTaxes --> PoACheck["PoA Sentinel Check: Is Transaction Executed by an Attorney / Representative?"]
+  
+  PoACheck -- "No (Self-Executed by Principal)" --> OfficerAction
+  PoACheck -- "Yes (By Attorney)" --> GatePoA{"PoA Gating Checks:<br/>1. Status == ACTIVE?<br/>2. Plot Covered?<br/>3. Action In Scope?<br/>4. Principal Alive?"}
+  
+  GatePoA -- "Failed" --> BlockPoA["Block Transaction under Power of Attorney Act 2012<br/>(Invalid, Out-of-Scope, or Posthumous Action)"]
+  GatePoA -- "Passed" --> OfficerAction["Officer Review & Administrative Action (AC Land / Sub-Registrar)"]
+  
+  BlockPoA --> LedgerAppend
+  OfficerAction --> LedgerAppend["Cryptographic Civil Servant Action Ledger:<br/>1. Canonical RFC-8785 JSON Serialization<br/>2. Fetch Previous Block SHA-256 Hash<br/>3. Compute Current Block SHA-256 Hash<br/>4. Append to Immutable Hash-Chain"]
+  
+  LedgerAppend --> OutputReceipt["Generate Printable Assessment Certificate & Verifiable Public QR Seal"]
+  OutputReceipt --> End(["End: Legally Audited, Tamper-Evident Transaction Record"])

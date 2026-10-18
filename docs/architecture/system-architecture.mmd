@@ -1,0 +1,86 @@
+flowchart TB
+  subgraph ClientLayer ["Client & Interaction Layer"]
+    CitizenUser["Citizen / Land Buyer (নাগরিক)"]
+    OfficerUser["Land Administration Officer (এসি ল্যান্ড / কানুনগো / সার্ভেয়ার)"]
+    JudicialUser["Sub-Registrar & Judicial Authority (উপ-রেজিস্ট্রার / আদালত)"]
+  end
+
+  subgraph PresentationLayer ["Frontend Application Layer (React 18 + Vite + TypeScript)"]
+    AppShell["App Shell (Sidebar, Topbar, Toast Provider, Hash Deep-Link Router)"]
+    I18nEngine["Bilingual Engine (bn-BD / en-US Context Provider)"]
+    MapView["Leaflet GIS Spatial Canvas (GeoJSON Polygons, Basemaps, Buffer Visualizer)"]
+    
+    subgraph UIModules ["Application Modules (17 Core & Governance Views)"]
+      M_Dash["Dashboard (5 Design Variations & KPI Radar)"]
+      M_GIS["Temporal GIS & Satellite Indices (NDVI/NDWI/NDBI)"]
+      M_Shik["Shikosti & Poyosti Riverine Erosion Monitor"]
+      M_Lit["Litigation & Judicial Registration Lock"]
+      M_Enc["Encroachment Radar & Citizen Reporting ('খাসজমি রক্ষা করুন')"]
+      M_Own["Title Chain Heritage & 4-Tier Khatian Audit (CS/SA/RS/BS)"]
+      M_Khas["1-No. Government Khas Land Defense"]
+      M_Lien["Bank Mortgage Lien & Encumbrance Manager"]
+      M_Val["Smart Mouza Valuation & Fee Estimator (Module 1)"]
+      M_Ledger["Cryptographic Civil Servant Action Ledger (Module 3)"]
+      M_LA["LA Direct Compensation Calculator (Module 4)"]
+      M_PoA["Power of Attorney Sentinel (Module 5)"]
+      M_Rep["Official Land Certificate & Heritage Report Generator"]
+    end
+  end
+
+  subgraph ServiceLayer ["Business Logic & Governance Engine Layer"]
+    ValService["Mouza Valuation Engine (src/services/valuation.ts)<br/>• Unit Converter (Decimal, Katha, Bigha, Acre, SqFt)<br/>• Statutory Taxes (Stamp 1.5%, Reg 2%, Local 2%, AIT 53H)<br/>• Undervaluation Evasion Detector"]
+    
+    EncService["Spatial Encroachment Service (src/services/encroachmentReport.ts)<br/>• Ray-Casting Polygon In-Out Checker<br/>• 450m Proximity Buffer Screening<br/>• Privacy-Preserving PII Redaction"]
+    
+    CryptoService["Cryptographic Action Ledger (src/services/auditLedger.ts)<br/>• Bit-Exact NIST FIPS 180-4 SHA-256<br/>• Canonical JSON Normalization<br/>• Tamper Detection & Integrity Verifier"]
+    
+    LAService["LA Compensation Service (src/services/laCompensation.ts)<br/>• 2017 Act Sec 9(3) Multipliers (200% / 300%)<br/>• 12-Month Preceding Deed Weighted Average<br/>• Simulated G2P Direct EFT Disbursement"]
+    
+    PoAService["PoA Sentinel Service (src/services/poa.ts)<br/>• Act 2012 / Rules 2015 Pre-Registration Gate<br/>• Scope Authorization Check<br/>• OTP Revocation & Principal Death Freeze"]
+  end
+
+  subgraph DataLayer ["Data & State Persistence Layer"]
+    SeedData["Canonical Seed Registry (src/data/seed.ts)<br/>• 32 Registered Plots with GeoJSON Polygons<br/>• Khas & Riverine Demarcations<br/>• Historical Khatian Heritage & Deeds"]
+    ZoningData["National Zoning Registry (src/data/zoning.ts)<br/>• Division > District > Upazila > Mouza Matrix<br/>• Sector Environmental Compliance"]
+    AuditStore["In-Memory & Append-Only Hash-Chain Ledger"]
+  end
+
+  subgraph ExternalDemoInterfaces ["Replaceable Integration Interfaces (Clearly Labeled Demo)"]
+    G2P_API["Simulated Bangladesh Bank BEFTN / RTGS Network"]
+    GIS_Tiles["CartoDB & Satellite Tile Providers"]
+    NID_Gateway["Simulated Election Commission NID Verification"]
+    SubReg_Gate["Sub-Registry Pre-Registration Validation Webhook"]
+  end
+
+  %% Relationships
+  CitizenUser --> AppShell
+  OfficerUser --> AppShell
+  JudicialUser --> AppShell
+
+  AppShell --> I18nEngine
+  AppShell --> UIModules
+  UIModules --> MapView
+
+  M_Val --> ValService
+  M_Enc --> EncService
+  M_Ledger --> CryptoService
+  M_LA --> LAService
+  M_PoA --> PoAService
+
+  ValService -.->|Record Valuation Audit| CryptoService
+  EncService -.->|Record Incident & Triage| CryptoService
+  LAService -.->|Record Award & Payment| CryptoService
+  PoAService -.->|Record PoA Gating & Revocation| CryptoService
+  M_Lit -.->|Record Judicial Lock| CryptoService
+
+  ValService --> SeedData
+  EncService --> SeedData
+  LAService --> SeedData
+  PoAService --> SeedData
+  UIModules --> ZoningData
+  CryptoService --> AuditStore
+
+  LAService -.-> G2P_API
+  MapView -.-> GIS_Tiles
+  PoAService -.-> SubReg_Gate
+  CitizenUser -.-> NID_Gateway

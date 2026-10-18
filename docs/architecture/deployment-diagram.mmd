@@ -1,0 +1,52 @@
+flowchart TB
+    %% BhumiRadar Physical & Logical Deployment Architecture
+    subgraph ClientDevice ["User Workstation / Mobile Terminal"]
+        subgraph Browser ["Web Browser Environment (Chrome, Firefox, Safari, Edge)"]
+            SPA["BhumiRadar Single-Page Application (React 18 + TS)"]
+            CryptoEngine["Client-Side FIPS 180-4 SHA-256 Engine"]
+            GISRenderer["Leaflet / Canvas GIS Rendering Pipeline"]
+            ClientStore["Local Storage / Memory State (Persistence & Audit Chain)"]
+        end
+    end
+
+    subgraph EdgeCDN ["Edge CDN & Static Hosting Infrastructure (Nginx / Vercel / Cloudflare)"]
+        HTMLAsset["index.html"]
+        JSAssets["Bundled JS / TS Chunks (Vite 5.4)"]
+        CSSAssets["Vanilla CSS Design System (globals.css, report.css)"]
+        StaticData["Static Assets & Seed GeoJSON (mouza, plots, emblems)"]
+    end
+
+    subgraph TileProviders ["Global Geospatial Tile Infrastructure"]
+        OSMTiles["CartoDB Positron / OpenStreetMap Tile Clusters (HTTPS)"]
+    end
+
+    subgraph GovInteroperability ["Government Registry Adapters (Integrated Demo / Service Boundary)"]
+        eMutationGateway["e-Namjari / Mutation Adapter Interface"]
+        SubRegistryPoA["Sub-Registry Power of Attorney Sentinel Service"]
+        KhatianRegistry["DLCRS / National Land Records Integration Layer"]
+        DisbursementGateway["BEFTN / RTGS Direct Compensation Disbursement Interface"]
+        NIDPorichoy["Porichoy NID Biometric Verification Interface"]
+    end
+
+    %% Client Interactions
+    Browser -->|HTTPS GET Static Resources| EdgeCDN
+    GISRenderer -->|HTTPS Tile Requests (WGS84 Tiles)| TileProviders
+    SPA -->|Canonical JSON Hashing & Block Validation| CryptoEngine
+    SPA -->|State Mutations & Tamper-Detection Checks| ClientStore
+
+    %% Simulated / External Service Interfaces
+    SPA -.->|REST / Adapter Boundary| eMutationGateway
+    SPA -.->|Deed & Sentinel Verification| SubRegistryPoA
+    SPA -.->|Khatian & Plot Spatial Validation| KhatianRegistry
+    SPA -.->|Direct LA Compensation Payouts| DisbursementGateway
+    SPA -.->|Identity & Biometric Validation| NIDPorichoy
+
+    classDef client fill:#eef2ff,stroke:#4f46e5,stroke-width:2px;
+    classDef edge fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+    classDef tile fill:#fef3c7,stroke:#d97706,stroke-width:2px;
+    classDef gov fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,stroke-dasharray: 5 5;
+
+    class ClientDevice,Browser,SPA,CryptoEngine,GISRenderer,ClientStore client;
+    class EdgeCDN,HTMLAsset,JSAssets,CSSAssets,StaticData edge;
+    class TileProviders,OSMTiles tile;
+    class GovInteroperability,eMutationGateway,SubRegistryPoA,KhatianRegistry,DisbursementGateway,NIDPorichoy gov;

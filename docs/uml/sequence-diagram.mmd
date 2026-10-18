@@ -1,0 +1,39 @@
+sequenceDiagram
+  autonumber
+  actor User as Citizen / Land Officer
+  participant UI as Frontend App (React 18)
+  participant ValService as Valuation Engine (valuation.ts)
+  participant PoAService as PoA Sentinel (poa.ts)
+  participant Ledger as Audit Ledger (auditLedger.ts)
+  participant Store as Immutable Ledger Store
+
+  Note over User, Store: Phase 1: Land Valuation & Revenue Evasion Detection
+  User->>UI: Enter Mouza, Dag 88/88, 5 Katha, Declared ৳6,500,000
+  UI->>ValService: calculateLandValuation(mouzaId, area, declaredPrice, frontage)
+  ValService->>ValService: Convert 5 Katha to 8.25 Decimals
+  ValService->>ValService: Lookup 2026 Gazette Schedule (Uttara Sector 4)
+  ValService->>ValService: Compute Official Minimum (8.25 dec * ৳2,600,000 * 1.10 = ৳23,595,000)
+  ValService->>ValService: Detect Undervaluation (Declared ৳6.5M < Minimum ৳23.5M)
+  ValService->>ValService: Compute Statutory Fees on Taxable Value (Stamp, Reg, Local, AIT)
+  ValService-->>UI: Return ValuationResult (isUndervalued: true, fees, difference)
+  UI-->>User: Display Revenue Alert & Blocked Stamping Warning
+
+  Note over User, Store: Phase 2: Power of Attorney Pre-Registration Gating
+  User->>UI: Submit Deed Execution Request via Attorney (POA-2024-DHK-0914)
+  UI->>PoAService: verifyPoaForTransaction(poaId, targetPlotId, targetAction: 'sale')
+  PoAService->>PoAService: Check status == 'active' && !deathEventRecorded
+  PoAService->>PoAService: Verify targetPlotId in linkedPlotIds
+  PoAService->>PoAService: Verify 'sale' in permittedScope
+  PoAService-->>UI: Return PoaVerificationResult (isValid: true, messageBn)
+  UI-->>User: Display Green Security Verification Badge
+
+  Note over User, Store: Phase 3: Cryptographic Audit Trail Chaining
+  UI->>Ledger: recordAuditEvent(eventType: 'VALUATION_SCHEDULE_APPLIED', actorId, payload)
+  Ledger->>Store: Fetch previous block's currentHash (H_{n-1})
+  Store-->>Ledger: Return H_{n-1}
+  Ledger->>Ledger: Serialize event payload canonical JSON (RFC-8785)
+  Ledger->>Ledger: Compute SHA-256(canonicalString + H_{n-1})
+  Ledger->>Store: Append Block #n with new currentHash (H_n)
+  Store-->>Ledger: Confirm Block #n appended
+  Ledger-->>UI: Return AuditEvent (id: 'EVT-2026-0043', currentHash: H_n)
+  UI-->>User: Display Cryptographic Receipt with Verifiable QR Proof
