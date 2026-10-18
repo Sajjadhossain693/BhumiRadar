@@ -140,6 +140,10 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
           attributionControl: true,
         }).setView([centerLat, centerLng], 7);
 
+        if (map.attributionControl) {
+          map.attributionControl.setPrefix(false);
+        }
+
         // OpenStreetMap Tile Layer
         const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
