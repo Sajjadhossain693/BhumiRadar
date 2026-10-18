@@ -13,6 +13,7 @@ const pageMeta: Record<PageKey, { titleKey: string; subKey: string }> = {
   khas:             { titleKey: 'khas.title',             subKey: 'khas.subtitle' },
   lien:             { titleKey: 'lien.title',             subKey: 'lien.subtitle' },
   citizen:          { titleKey: 'cit.title',              subKey: 'cit.subtitle' },
+  officerAudit:     { titleKey: 'officer.title',          subKey: 'officer.subtitle' },
   health:           { titleKey: 'hlt.title',              subKey: 'hlt.subtitle' },
   fieldInspection:  { titleKey: 'fld.title',              subKey: 'fld.subtitle' },
   reports:          { titleKey: 'rep.title',              subKey: 'rep.subtitle' },

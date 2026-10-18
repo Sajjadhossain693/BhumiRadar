@@ -12,6 +12,7 @@ import { OwnershipChain } from './pages/OwnershipChain';
 import { GovernmentKhas } from './pages/GovernmentKhas';
 import { BankLien } from './pages/BankLien';
 import { CitizenVerification } from './pages/CitizenVerification';
+import { OfficerAudit } from './pages/OfficerAudit';
 import { PlotHealth } from './pages/PlotHealth';
 import { FieldInspection } from './pages/FieldInspection';
 import { Reports } from './pages/Reports';
@@ -26,6 +27,7 @@ export type PageKey =
   | 'khas'
   | 'lien'
   | 'citizen'
+  | 'officerAudit'
   | 'health'
   | 'fieldInspection'
   | 'reports';
@@ -41,7 +43,7 @@ export const App: React.FC = () => {
       const allowed: PageKey[] = [
         'dashboard', 'temporalGis', 'shikostiPoyosti', 'litigation',
         'encroachment', 'ownershipChain', 'khas', 'lien',
-        'citizen', 'health', 'fieldInspection', 'reports',
+        'citizen', 'officerAudit', 'health', 'fieldInspection', 'reports',
       ];
       if (allowed.includes(h)) setPage(h);
     };
@@ -75,7 +77,8 @@ export const App: React.FC = () => {
             {page === 'ownershipChain' && <OwnershipChain plotId={selectedPlotId} onSelectPlot={onSelectPlot} />}
             {page === 'khas' && <GovernmentKhas />}
             {page === 'lien' && <BankLien onSelectPlot={onSelectPlot} />}
-            {page === 'citizen' && <CitizenVerification onSelectPlot={onSelectPlot} />}
+            {page === 'citizen' && <CitizenVerification onSelectPlot={onSelectPlot} onNavigate={navigate} />}
+            {page === 'officerAudit' && <OfficerAudit onSelectPlot={onSelectPlot} onNavigate={navigate} />}
             {page === 'health' && <PlotHealth plotId={selectedPlotId} onSelectPlot={onSelectPlot} />}
             {page === 'fieldInspection' && <FieldInspection onSelectPlot={onSelectPlot} />}
             {page === 'reports' && <Reports plotId={selectedPlotId} onSelectPlot={onSelectPlot} />}

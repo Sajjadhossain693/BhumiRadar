@@ -27,6 +27,7 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
   const [showReportModal, setShowReportModal] = useState(false);
   const [showZoningQuickModal, setShowZoningQuickModal] = useState(false);
   const [temporalYear, setTemporalYear] = useState<2022 | 2024 | 2026>(2026);
+  const [searchRole, setSearchRole] = useState<'citizen' | 'officer'>('citizen');
 
   // Cascading quick search inputs
   const [selDiv, setSelDiv] = useState('chattogram');
@@ -100,7 +101,11 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
 
   const handleQuickSearchSubmit = () => {
     setShowQuickSearch(false);
-    setShowReportModal(true);
+    if (searchRole === 'officer') {
+      onNavigate('officerAudit');
+    } else {
+      onNavigate('citizen');
+    }
   };
 
   return (
@@ -919,24 +924,80 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
         <Modal
           open={showQuickSearch}
           onClose={() => setShowQuickSearch(false)}
-          title={`📍 ${lang === 'bn' ? 'ক্যাডাস্ট্রাল মৌজা ও প্লট অনুসন্ধান (Cascading Dropdown)' : 'Cadastral Mouza & Plot Search'}`}
+          title={`📍 ${lang === 'bn' ? 'ক্যাডাস্ট্রাল মৌজা ও প্লট অনুসন্ধান' : 'Cadastral Mouza & Plot Search'}`}
           size="md"
           footer={
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-secondary" onClick={() => setShowQuickSearch(false)}>
                 {t('common.close')}
               </button>
-              <button className="btn btn-primary" onClick={handleQuickSearchSubmit} style={{ background: '#dc2626', borderColor: '#dc2626', fontWeight: 700 }}>
-                <I.search size={14} /> {lang === 'bn' ? 'যাচাই শুরু করুন' : 'Start Verification'}
+              <button
+                className="btn btn-primary"
+                onClick={handleQuickSearchSubmit}
+                style={{
+                  background: searchRole === 'officer' ? '#0f172a' : '#047857',
+                  borderColor: searchRole === 'officer' ? '#0f172a' : '#047857',
+                  fontWeight: 700
+                }}
+              >
+                <I.search size={14} /> {searchRole === 'officer' ? (lang === 'bn' ? 'কর্মকর্তা অডিটে যান' : 'Go to Officer Audit') : (lang === 'bn' ? 'নাগরিক যাচাই শুরু করুন' : 'Start Citizen Verification')}
               </button>
             </div>
           }
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Dedicated Role Tabs */}
+            <div style={{ display: 'flex', background: '#f1f5f9', padding: 4, borderRadius: 10, gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => setSearchRole('citizen')}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: 'none',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: searchRole === 'citizen' ? '#047857' : 'transparent',
+                  color: searchRole === 'citizen' ? '#ffffff' : '#475569',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  fontSize: '0.82rem',
+                }}
+              >
+                <I.user size={14} />
+                {lang === 'bn' ? 'সাধারণ নাগরিক অনুসন্ধান' : 'Citizen Search'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSearchRole('officer')}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border: 'none',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  background: searchRole === 'officer' ? '#0f172a' : 'transparent',
+                  color: searchRole === 'officer' ? '#ffffff' : '#475569',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  fontSize: '0.82rem',
+                }}
+              >
+                <I.shield size={14} />
+                {lang === 'bn' ? 'ভূমি কর্মকর্তা অডিট' : 'Land Officer Audit'}
+              </button>
+            </div>
+
             <p className="muted" style={{ fontSize: '0.82rem', margin: 0 }}>
-              {lang === 'bn'
-                ? 'বিভাগ থেকে শুরু করে সরাসরি দাগ নম্বর পর্যন্ত নির্বাচন করুন। হ্যাকথন ডেমো প্লট ৮৮৮৮৮১ স্বয়ংক্রিয়ভাবে লোড হবে।'
-                : 'Select from Division down to cadastral plot. Demo plot 888881 will be verified.'}
+              {searchRole === 'officer'
+                ? (lang === 'bn' ? 'সহকারী কমিশনার (ভূমি) ও কানুনগোদের জন্য গভীর আইনি অডিট, ৪-স্তরীয় খতিয়ান বংশলতিকা ও সাব-রেজিস্ট্রি লক প্যানেল।' : 'Deep investigation, 4-tier khatian archival lineage & litigation lock controls for AC Land & Kanungos.')
+                : (lang === 'bn' ? 'সাধারণ নাগরিকদের জন্য জমি ক্রয়যোগ্যতা ও আইনি ঝুঁকিমুক্ত কিনা তা সরাসরি যাচাই করার সহজ পোর্টাল।' : 'Check if land is safe and eligible for purchase before buying.')}
             </p>
 
             <div className="grid grid-2" style={{ gap: 10, fontSize: '0.8rem' }}>

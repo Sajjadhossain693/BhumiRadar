@@ -16,6 +16,7 @@ const navModules: NavItem[] = [
   { key: 'khas',              labelKey: 'nav.khas',              icon: I.land },
   { key: 'lien',              labelKey: 'nav.lien',              icon: I.bank },
   { key: 'citizen',           labelKey: 'nav.citizen',           icon: I.user },
+  { key: 'officerAudit',      labelKey: 'nav.officerAudit',      icon: I.shield, badge: 3 },
   { key: 'health',            labelKey: 'nav.health',            icon: I.shield },
   { key: 'fieldInspection',   labelKey: 'nav.fieldInspection',   icon: I.search },
   { key: 'reports',           labelKey: 'nav.reports',           icon: I.report },
