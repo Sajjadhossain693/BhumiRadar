@@ -78,18 +78,13 @@ export const OwnershipChainReport: React.FC<Props> = ({ plot, onSelectPlot }) =>
         {/* Emblem & Header */}
         <div className="report-header">
           <div className="report-emblem">
-            <svg viewBox="0 0 80 80" width="80" height="80" aria-hidden>
-              <circle cx="40" cy="40" r="38" fill="#fff" stroke="#0a4d24" strokeWidth="1.5" />
-              <circle cx="40" cy="40" r="32" fill="#e8f5e9" />
-              <ellipse cx="40" cy="48" rx="14" ry="6" fill="#c8e6c9" stroke="#2e7d32" strokeWidth="0.8" />
-              <path d="M40 36 q-10 6 -14 14 M40 36 q10 6 14 14 M40 36 q-6 8 -8 16 M40 36 q6 8 8 16 M40 36 v18" stroke="#1b5e20" strokeWidth="1" fill="none" />
-              <g fill="#c62727">
-                <polygon points="40,16 41.5,19.5 45,20 42.5,22.5 43,26 40,24 37,26 37.5,22.5 35,20 38.5,19.5" />
-                <polygon points="28,22 29,24 31,24.2 29.5,25.7 29.8,27.6 28,26.6 26.2,27.6 26.5,25.7 25,24.2 27,24" />
-                <polygon points="52,22 53,24 55,24.2 53.5,25.7 53.8,27.6 52,26.6 50.2,27.6 50.5,25.7 49,24.2 51,24" />
-                <polygon points="40,60 41,62 43,62.2 41.5,63.7 41.8,65.6 40,64.6 38.2,65.6 38.5,63.7 37,62.2 39,62" />
-              </g>
-            </svg>
+            <img
+              src="/assets/bd-govt-emblem.png"
+              alt="গণপ্রজাতন্ত্রী বাংলাদেশ সরকার"
+              width="82"
+              height="82"
+              style={{ objectFit: 'contain', display: 'block', margin: '0 auto' }}
+            />
           </div>
           <div className="report-title">
             <div className="report-govt">{t('app.government')}</div>

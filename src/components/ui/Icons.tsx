@@ -79,4 +79,10 @@ export const I = {
     <line x1="12" y1="2" x2="12" y2="6" opacity="0.6" />
     <line x1="12" y1="18" x2="12" y2="22" opacity="0.6" />
   </>),
+  radar: make(<>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="5" />
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+    <path d="M12 3v9l6 6" />
+  </>),
 };

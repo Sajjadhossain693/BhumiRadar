@@ -26,26 +26,8 @@ export const Sidebar: React.FC<{ current: PageKey; onNavigate: (p: PageKey) => v
   return (
     <aside className="sidebar" aria-label="Primary navigation">
       <div className="sidebar__brand">
-        <div className="sidebar__logo" aria-hidden>
-          {/* Stylized radar on map */}
-          <svg viewBox="0 0 64 64" width="32" height="32" aria-hidden>
-            <defs>
-              <radialGradient id="lg" cx="50%" cy="40%" r="60%">
-                <stop offset="0%" stopColor="#6cbf76" />
-                <stop offset="60%" stopColor="#1e8736" />
-                <stop offset="100%" stopColor="#0a4d24" />
-              </radialGradient>
-            </defs>
-            <circle cx="32" cy="32" r="30" fill="url(#lg)" />
-            {/* Map outlines (Bangladesh-ish) */}
-            <path d="M22 18 q5 -3 9 0 q6 -2 11 4 q3 6 1 12 q-2 6 -8 8 q-7 3 -12 0 q-6 -3 -7 -10 q-1 -8 6 -14 z"
-                  fill="rgba(255,255,255,0.18)" stroke="rgba(255,255,255,0.5)" strokeWidth="0.8" />
-            {/* Radar rings */}
-            <circle cx="32" cy="32" r="14" fill="none" stroke="rgba(255,255,255,0.35)" strokeDasharray="2 3" />
-            <circle cx="32" cy="32" r="8"  fill="none" stroke="rgba(255,255,255,0.55)" />
-            <line x1="32" y1="32" x2="44" y2="22" stroke="#fff" strokeWidth="1.6" />
-            <circle cx="32" cy="32" r="2.6" fill="#e83a3a" />
-          </svg>
+        <div className="sidebar__logo" aria-hidden style={{ background: '#ffffff', padding: 2, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/assets/bd-govt-emblem.png" alt="গণপ্রজাতন্ত্রী বাংলাদেশ সরকার" width="32" height="32" style={{ objectFit: 'contain' }} />
         </div>
         <div className="sidebar__title">
           <strong>{t('app.name')}</strong>

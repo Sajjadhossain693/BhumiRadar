@@ -68,7 +68,7 @@
   --topbar-h: 64px;
 
   /* Typography */
-  --font-bn: "Noto Sans Bengali", "Hind Siliguri", "Kalpurush", "SolaimanLipi", system-ui, sans-serif;
+  --font-bn: "Hind Siliguri", "Noto Sans Bengali", "Kalpurush", "SolaimanLipi", system-ui, sans-serif;
   --font-en: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
@@ -1195,6 +1195,83 @@ input, select, textarea {
 
 .btn-cadastral-zoning:hover {
   background: #b45309;
+}
+
+/* ===== HTML Showcase & High-End LandTech Styles ===== */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.radar-cone {
+  background: conic-gradient(from 0deg at 50% 50%, rgba(220, 38, 38, 0.45) 0deg, rgba(21, 128, 61, 0.15) 60deg, transparent 120deg);
+}
+
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-radar-sweep {
+  animation: radarSweep 4s linear infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+.showcase-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--ink-600);
+}
+
+.showcase-tab:hover {
+  color: var(--ink-900);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.showcase-tab.active {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.showcase-card {
+  background: #ffffff;
+  border: 1px solid var(--ink-200);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+  border-color: #cbd5e1;
+}
+
+.showcase-card.danger-ring {
+  border-color: #fca5a5;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08);
+}
+
+.showcase-card.danger-ring:hover {
+  border-color: #dc2626;
+  box-shadow: 0 12px 28px rgba(220, 38, 38, 0.15);
 }
 
 
