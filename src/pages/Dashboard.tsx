@@ -25,6 +25,7 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
   const [designVariation, setDesignVariation] = useState<DesignVariation>(1);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showZoningQuickModal, setShowZoningQuickModal] = useState(false);
   const [temporalYear, setTemporalYear] = useState<2022 | 2024 | 2026>(2026);
 
   // Cascading quick search inputs
@@ -124,38 +125,42 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             position: 'relative',
-            width: 38,
-            height: 38,
+            width: 40,
+            height: 40,
             borderRadius: 10,
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
+            background: '#ffffff',
+            border: '1.5px solid #bbf7d0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#15803d',
+            padding: 2,
+            boxShadow: '0 2px 6px rgba(10, 77, 36, 0.08)',
           }}>
-            <I.shield size={22} />
-            <span style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: '#dc2626' }} />
+            <img
+              src="/assets/bd-govt-emblem.png"
+              alt="গণপ্রজাতন্ত্রী বাংলাদেশ সরকার"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
-                ভূমি<span style={{ color: '#dc2626' }}>রাডার</span>
+              <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#0f172a' }}>
+                ভূমি<span style={{ color: '#0a4d24' }}>রাডার</span>
               </span>
               <span style={{
-                fontSize: '10.5px',
+                fontSize: '10px',
                 fontWeight: 700,
-                padding: '1px 6px',
-                background: '#fef2f2',
-                color: '#dc2626',
-                border: '1px solid #fecaca',
+                padding: '2px 7px',
+                background: '#ecfdf5',
+                color: '#047857',
+                border: '1px solid #a7f3d0',
                 borderRadius: 4,
               }}>
-                {lang === 'bn' ? 'হ্যাকথন ২০২৬' : 'Hackathon 2026'}
+                {lang === 'bn' ? 'গণপ্রজাতন্ত্রী বাংলাদেশ সরকার' : 'Govt of Bangladesh'}
               </span>
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--ink-500)', fontWeight: 500 }}>
-              {lang === 'bn' ? 'স্মার্ট ল্যান্ড ইন্টেলিজেন্স ও এনক্রোচমেন্ট শিল্ড' : 'Unified Land Intelligence & Encroachment Shield'}
+            <div style={{ fontSize: '11px', color: 'var(--ink-500)', fontWeight: 600 }}>
+              {lang === 'bn' ? 'ভূমি মন্ত্রণালয় • স্মার্ট ল্যান্ড ইন্টেলিজেন্স ও ডিজিটাল জোনিং' : 'Ministry of Land • Unified Land Intelligence & Zoning'}
             </div>
           </div>
         </div>
@@ -190,6 +195,24 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
 
         {/* Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => setShowZoningQuickModal(true)}
+            className="btn btn-sm"
+            style={{
+              background: '#fffbeb',
+              color: '#b45309',
+              border: '1.5px solid #f59e0b',
+              fontWeight: 700,
+              fontSize: '11.5px',
+              padding: '6px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              boxShadow: '0 1px 3px rgba(245, 158, 11, 0.2)',
+            }}
+          >
+            🧭 {lang === 'bn' ? 'ভূমি জোনিং সারাংশ' : 'Zoning Summary'}
+          </button>
           <button
             onClick={() => setShowReportModal(true)}
             className="btn btn-sm"
@@ -267,7 +290,7 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
                 marginBottom: 16,
               }}>
                 <span className="live-beacon" style={{ width: 8, height: 8 }} />
-                {lang === 'bn' ? 'স্যাটেলাইট ক্যাডাস্ট্রাল রাডার • বাংলাদেশ ল্যান্ডটেক হ্যাকথন ২০২৬' : 'Satellite Cadastral Radar • LandTech 2026'}
+                {lang === 'bn' ? 'স্যাটেলাইট ক্যাডাস্ট্রাল রাডার • গণপ্রজাতন্ত্রী বাংলাদেশ সরকার' : 'Satellite Cadastral Radar • Government of Bangladesh'}
               </div>
 
               <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 800, lineHeight: 1.25, margin: '0 0 14px 0', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
@@ -1097,6 +1120,121 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
                 <div style={{ fontSize: '11px', color: '#dc2626', fontWeight: 800 }}>
                   ভেরিফাইড ডিজিটাল রেকর্ড
                 </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL 3: LAND ZONING SUMMARY (Direct Top-Level Access)         */}
+      {/* ============================================================== */}
+      {showZoningQuickModal && (
+        <Modal
+          open={showZoningQuickModal}
+          onClose={() => setShowZoningQuickModal(false)}
+          title={`🧭 ${t('cadastral.zoningTitle')} — ${lang === 'bn' ? quickZoning.mouzaBn : quickZoning.mouzaEn}`}
+          size="md"
+          footer={
+            <button className="btn btn-primary" onClick={() => setShowZoningQuickModal(false)}>
+              {t('common.close')}
+            </button>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: '#f8fafc', padding: 10, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.8rem' }}>
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.72rem', color: '#64748b' }}>{t('common.division')}</label>
+                <select value={selDiv} onChange={e => handleQuickDivChange(e.target.value)} className="select" style={{ width: '100%', padding: '4px 8px', fontSize: '0.8rem' }}>
+                  {divisions.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.72rem', color: '#64748b' }}>{t('common.district')}</label>
+                <select value={selDist} onChange={e => handleQuickDistChange(e.target.value)} className="select" style={{ width: '100%', padding: '4px 8px', fontSize: '0.8rem' }}>
+                  {availableQuickDists.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.72rem', color: '#64748b' }}>{t('common.thana')}</label>
+                <select value={selUpazila} onChange={e => handleQuickUpazilaChange(e.target.value)} className="select" style={{ width: '100%', padding: '4px 8px', fontSize: '0.8rem' }}>
+                  {availableQuickUpazilas.map(u => (
+                    <option key={u.id} value={u.id}>{lang === 'bn' ? u.bn : u.en}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontWeight: 600, fontSize: '0.72rem', color: '#64748b' }}>{t('common.mouza')}</label>
+                <select value={selMouza} onChange={e => setSelMouza(e.target.value)} className="select" style={{ width: '100%', padding: '4px 8px', fontSize: '0.8rem' }}>
+                  {availableQuickMouzas.map(m => (
+                    <option key={m.id} value={m.id}>{lang === 'bn' ? m.bn : m.en}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div style={{ borderLeft: '4px solid #d97706', background: '#fffbeb', padding: 12, borderRadius: 6 }}>
+              <div style={{ fontSize: '0.74rem', color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>
+                {lang === 'bn' ? 'ভূমি জোনিং শ্রেণি (Official Land Zoning Category)' : 'Official Land Zoning Category'}
+              </div>
+              <h4 style={{ margin: '0 0 6px 0', color: '#b45309', fontSize: '1.05rem' }}>
+                🧭 {lang === 'bn' ? quickZoning.zoningCategoryBn : quickZoning.zoningCategoryEn}
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.83rem', color: '#78350f', lineHeight: 1.5 }}>
+                {lang === 'bn' ? quickZoning.descriptionBn : quickZoning.descriptionEn}
+              </p>
+            </div>
+
+            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 8, background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <div>
+                <b>🛡️ {lang === 'bn' ? 'পরিবেশগত সংবেদনশীলতা' : 'Eco Sensitivity'}:</b>{' '}
+                <span className="chip" style={{
+                  background: quickZoning.ecoSensitivityLevel === 'critical' ? '#fee2e2' : quickZoning.ecoSensitivityLevel === 'high' ? '#ffedd5' : '#e0f2fe',
+                  color: quickZoning.ecoSensitivityLevel === 'critical' ? '#b91c1c' : quickZoning.ecoSensitivityLevel === 'high' ? '#c2410c' : '#0369a1',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                }}>
+                  {lang === 'bn' ? quickZoning.ecoSensitivityBn : quickZoning.ecoSensitivityEn}
+                </span>
+              </div>
+              <div>
+                <b>🌊 {lang === 'bn' ? 'প্লাবনভূমি সতর্কতা' : 'Floodplain Warning'}:</b>{' '}
+                <span className="chip" style={{
+                  background: quickZoning.floodWarningLevel === 'critical' ? '#fee2e2' : quickZoning.floodWarningLevel === 'high' ? '#ffedd5' : '#f1f5f9',
+                  color: quickZoning.floodWarningLevel === 'critical' ? '#b91c1c' : quickZoning.floodWarningLevel === 'high' ? '#c2410c' : '#334155',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                }}>
+                  {lang === 'bn' ? quickZoning.floodWarningBn : quickZoning.floodWarningEn}
+                </span>
+              </div>
+              <div>
+                <b>📜 {lang === 'bn' ? 'মাস্টারপ্ল্যান কোড' : 'Masterplan Code'}:</b>{' '}
+                <span className="mono" style={{ background: '#e2e8f0', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                  {quickZoning.masterplanCode}
+                </span>
+              </div>
+              <div>
+                <b>⚖️ {lang === 'bn' ? 'ব্যবহার বিধিনিষেধ ও আইন' : 'Zoning Regulations'}:</b>{' '}
+                <span style={{ fontSize: '0.82rem', color: '#475569' }}>
+                  {lang === 'bn' ? quickZoning.regulationsBn : quickZoning.regulationsEn}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: 10 }}>
+              <div style={{ fontWeight: 700, color: '#166534', fontSize: '0.82rem', marginBottom: 4 }}>
+                📊 {lang === 'bn' ? `${quickZoning.mouzaBn} মৌজার ভূমি ব্যবহারের সামগ্রিক অনুপাত` : `${quickZoning.mouzaEn} Land Classification Ratio`}
+              </div>
+              <div className="grid grid-2" style={{ gap: 8, fontSize: '0.78rem' }}>
+                <div>🌾 {lang === 'bn' ? 'কৃষি জমি' : 'Agricultural'}: <b>{quickZoning.landUse.agriculturalPct}%</b> ({quickZoning.landUse.agriculturalPlots}টি দাগ)</div>
+                <div>🏡 {lang === 'bn' ? 'আবাসিক' : 'Residential'}: <b>{quickZoning.landUse.residentialPct}%</b> ({quickZoning.landUse.residentialPlots}টি দাগ)</div>
+                <div>🏛️ {lang === 'bn' ? 'খাস জমি/খাল' : 'Khas/Canal'}: <b>{quickZoning.landUse.khasCanalPct}%</b> ({quickZoning.landUse.khasCanalPlots}টি দাগ)</div>
+                <div>🌊 {lang === 'bn' ? 'নদীভাঙন (শিকস্তি)' : 'Erosion'}: <b>{quickZoning.landUse.erosionWaterPct}%</b> ({quickZoning.landUse.erosionWaterPlots}টি দাগ)</div>
               </div>
             </div>
           </div>

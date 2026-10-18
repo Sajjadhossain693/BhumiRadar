@@ -487,7 +487,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
           </button>
         </div>
 
-        {/* Layer Switcher */}
+        {/* Layer Switcher & Top Zoning Actions */}
         <div className="map-filter-group">
           {(['satellite', 'osm', 'cadastral', 'erosion'] as Layer[]).map(l => (
             <button
@@ -501,6 +501,39 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                t('temporal.layer.erosion')}
             </button>
           ))}
+          <button
+            onClick={() => setShowZoningModal(true)}
+            className="btn btn-sm"
+            style={{
+              background: '#fffbeb',
+              color: '#b45309',
+              border: '1.5px solid #f59e0b',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              boxShadow: '0 1px 3px rgba(245, 158, 11, 0.25)',
+            }}
+          >
+            🧭 {lang === 'bn' ? 'ভূমি জোনিং সারাংশ' : 'Zoning Summary'}
+          </button>
+          <button
+            onClick={() => setShowLandUseModal(true)}
+            className="btn btn-sm"
+            style={{
+              background: '#f0fdf4',
+              color: '#166534',
+              border: '1.5px solid #86efac',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+            }}
+          >
+            📊 {lang === 'bn' ? 'ভূমি ব্যবহার' : 'Land Use'}
+          </button>
         </div>
       </div>
 
@@ -744,14 +777,32 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
         {/* Floating Cadastral Mouza Search Widget (Image 1 Style) */}
         <div className={`cadastral-search-widget ${cadastralCollapsed ? 'collapsed' : ''}`}>
           <div className="cadastral-search-header">
-            <span>📐 {t('cadastral.searchTitle')}</span>
-            <button
-              onClick={() => setCadastralCollapsed(c => !c)}
-              title={cadastralCollapsed ? 'Expand' : 'Collapse'}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--ink-700)' }}
-            >
-              {cadastralCollapsed ? '➕' : '➖'}
-            </button>
+            <span style={{ fontSize: '0.85rem' }}>📐 {t('cadastral.searchTitle')}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                onClick={() => setShowZoningModal(true)}
+                className="btn btn-sm"
+                style={{
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  background: '#fffbeb',
+                  color: '#b45309',
+                  border: '1px solid #f59e0b',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+                title={lang === 'bn' ? 'ভূমি জোনিং সারাংশ দেখুন' : 'View Land Zoning Summary'}
+              >
+                🧭 {lang === 'bn' ? 'জোনিং' : 'Zoning'}
+              </button>
+              <button
+                onClick={() => setCadastralCollapsed(c => !c)}
+                title={cadastralCollapsed ? 'Expand' : 'Collapse'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--ink-700)' }}
+              >
+                {cadastralCollapsed ? '➕' : '➖'}
+              </button>
+            </div>
           </div>
           {!cadastralCollapsed && (
             <div className="cadastral-search-body">
@@ -808,32 +859,43 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                 </select>
               </div>
 
-              {/* Dynamic Sector Zoning Status Pill */}
-              <div style={{
-                padding: '6px 8px',
-                background: '#f0fdf4',
-                border: '1px solid #86efac',
-                borderRadius: 6,
-                fontSize: '0.74rem',
-                lineHeight: 1.3,
-              }}>
-                <div style={{ color: '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span>🧭</span>
-                  <span>{lang === 'bn' ? 'ভূমি জোনিং জোন' : 'Zoning Zone'}:</span>
+              {/* Dynamic Sector Zoning Status Pill (Clickable) */}
+              <div
+                onClick={() => setShowZoningModal(true)}
+                style={{
+                  padding: '8px 10px',
+                  background: '#fffbeb',
+                  border: '1.5px solid #f59e0b',
+                  borderRadius: 6,
+                  fontSize: '0.75rem',
+                  lineHeight: 1.35,
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(245, 158, 11, 0.15)',
+                }}
+                title={lang === 'bn' ? 'সম্পূর্ণ ভূমি জোনিং সারাংশ দেখতে ক্লিক করুন' : 'Click to view Land Zoning Summary'}
+              >
+                <div style={{ color: '#b45309', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>🧭</span>
+                    <span>{lang === 'bn' ? 'ভূমি জোনিং শ্রেণি' : 'Zoning Sector'}:</span>
+                  </span>
+                  <span style={{ fontSize: '10px', background: '#d97706', color: '#fff', padding: '1px 5px', borderRadius: 4 }}>
+                    {lang === 'bn' ? 'বিস্তারিত' : 'Details'} ➔
+                  </span>
                 </div>
-                <div style={{ color: '#14532d', fontWeight: 600, marginTop: 2 }}>
+                <div style={{ color: '#78350f', fontWeight: 700, marginTop: 3 }}>
                   {lang === 'bn' ? currentZoning.zoneTagBn : currentZoning.zoneTagEn}
                 </div>
-                <div style={{ color: '#15803d', fontSize: '0.68rem', marginTop: 1 }}>
+                <div style={{ color: '#92400e', fontSize: '0.68rem', marginTop: 1 }}>
                   {currentZoning.masterplanCode}
                 </div>
               </div>
 
-              <button className="btn-cadastral-use" onClick={() => setShowLandUseModal(true)}>
-                📊 {t('cadastral.landUseSummary')}
-              </button>
               <button className="btn-cadastral-zoning" onClick={() => setShowZoningModal(true)}>
                 🧭 {t('cadastral.zoningSummary')}
+              </button>
+              <button className="btn-cadastral-use" onClick={() => setShowLandUseModal(true)}>
+                📊 {t('cadastral.landUseSummary')}
               </button>
             </div>
           )}
