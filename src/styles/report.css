@@ -1,0 +1,187 @@
+/* ============================================
+   BhumiRadar — Report (A4) styles
+   Mirrors the sample certificate image.
+   ============================================ */
+
+.report-sheet {
+  background: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 24px auto;
+  padding: 16mm 14mm 14mm 14mm;
+  border: 1px solid var(--ink-200);
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  font-family: "Noto Sans Bengali", "Inter", system-ui, sans-serif;
+  color: #1a1a1a;
+  position: relative;
+  line-height: 1.45;
+}
+
+[data-lang="en"] .report-sheet { font-family: "Inter", "Noto Sans Bengali", system-ui, sans-serif; }
+
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-direction: column;
+  text-align: center;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+.report-emblem { display: flex; justify-content: center; }
+.report-title { text-align: center; }
+.report-govt   { font-size: 13pt; font-weight: 600; color: #1a1a1a; }
+.report-ministry { font-size: 15pt; font-weight: 700; color: #0a4d24; margin-top: 2px; }
+.report-dept    { font-size: 12pt; font-weight: 600; color: #1a1a1a; }
+
+.report-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 11pt;
+  margin: 8px 0;
+  padding: 4px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.report-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  font-size: 11pt;
+  margin: 8px 0;
+  padding: 4px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.report-section-title {
+  text-align: center;
+  font-size: 12pt;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: #0a4d24;
+  text-transform: none;
+  letter-spacing: 0;
+  position: relative;
+}
+.report-section-title::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 1.5px;
+  background: #0a4d24;
+  margin: 6px auto 0;
+}
+
+.report-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5pt;
+  margin-bottom: 12px;
+}
+.report-tbl th, .report-tbl td {
+  border: 1px solid #94a3b8;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+.report-tbl th {
+  background: #e7eef3;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: center;
+}
+.report-td-c   { text-align: center; font-weight: 600; }
+.report-td-mono { font-family: "JetBrains Mono", "Courier New", monospace; font-size: 10pt; }
+.report-empty  { text-align: center; color: #64748b; padding: 20px; }
+
+.report-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9.5pt;
+  font-weight: 600;
+  border: 1px solid;
+}
+.report-chip.green  { background: #d1fae5; color: #047857; border-color: #10b981; }
+.report-chip.amber  { background: #fef3c7; color: #92400e; border-color: #d97706; }
+.report-chip.red    { background: #fee2e2; color: #991b1b; border-color: #dc2626; }
+
+.report-warning {
+  background: #fff;
+  border: 1.5px solid #c62727;
+  color: #c62727;
+  padding: 8px 12px;
+  font-size: 10.5pt;
+  font-weight: 600;
+  margin: 12px 0;
+  border-radius: 4px;
+}
+
+.report-instructions {
+  font-size: 10.5pt;
+  margin: 8px 0 18px;
+}
+.report-instructions ol { margin: 4px 0 0 22px; padding: 0; }
+.report-instructions li { margin-bottom: 4px; }
+
+.report-foot {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: flex-end;
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.report-sig { font-size: 10pt; }
+.report-sig-name { font-weight: 700; font-size: 11pt; margin: 4px 0; }
+.report-sig-line { border-top: 1px solid #1a1a1a; padding-top: 4px; max-width: 220px; margin: 6px 0 0; }
+.report-seal { margin: 8px 0; opacity: 0.85; }
+
+.report-qr {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.report-qr img {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.report-bottom {
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid #cbd5e1;
+  text-align: center;
+  font-size: 9.5pt;
+  color: #1a1a1a;
+}
+
+@media print {
+  @page { size: A4; margin: 0; }
+  body { background: #fff !important; }
+  .no-print, .sidebar, .topbar, .page-head, .toast-stack { display: none !important; }
+  .app-content { padding: 0 !important; }
+  .report-sheet {
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    padding: 12mm 14mm !important;
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .report-sheet { width: 100%; padding: 12mm 8mm; }
+  .report-row-3 { grid-template-columns: 1fr; }
+  .report-foot  { grid-template-columns: 1fr; }
+}

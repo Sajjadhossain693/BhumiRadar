@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ভূমিরাডার — স্মার্ট ল্যান্ড ইন্টেলিজেন্স | BhumiRadar — Smart Land Intelligence" />
+    <title>ভূমিরাডার | BhumiRadar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Apply language preference before React renders to prevent FOUC
+      (function () {
+        try {
+          var saved = localStorage.getItem('bhumi-radar:lang');
+          var lang = saved === 'en' || saved === 'bn' ? saved : 'bn';
+          document.documentElement.lang = lang;
+          document.documentElement.dataset.lang = lang;
+          document.documentElement.dir = 'ltr';
+        } catch (e) {
+          document.documentElement.lang = 'bn';
+          document.documentElement.dataset.lang = 'bn';
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DRHKM62q.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BprvkTKC.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
