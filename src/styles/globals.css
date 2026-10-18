@@ -316,6 +316,12 @@ input, select, textarea {
   box-shadow: var(--shadow-sm);
 }
 .lang-toggle button.en-opt { font-family: var(--font-en); }
+.lang-divider {
+  color: var(--ink-400);
+  padding: 0 2px;
+  font-weight: 300;
+  user-select: none;
+}
 
 .topbar__user {
   display: flex; align-items: center; gap: 10px;
@@ -835,3 +841,56 @@ input, select, textarea {
 .mono { font-family: var(--font-mono); }
 .hidden-mobile { }
 @media (max-width: 720px) { .hidden-mobile { display: none !important; } }
+
+/* ===== Bengali-specific typography & layout enhancements ===== */
+[data-lang="bn"] .kpi__label,
+[data-lang="bn"] .badge,
+[data-lang="bn"] .chip,
+[data-lang="bn"] .sidebar__section,
+[data-lang="bn"] .tbl th {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-lang="bn"] .nav-item {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+[data-lang="bn"] .btn {
+  line-height: 1.5;
+}
+
+[data-lang="bn"] h1 { font-size: 1.55rem; line-height: 1.4; }
+[data-lang="bn"] h2 { font-size: 1.25rem; line-height: 1.4; }
+[data-lang="bn"] h3 { font-size: 1.05rem; line-height: 1.4; }
+
+/* Ensure Bengali text does not clip or crowd in compact elements */
+[data-lang="bn"] .badge {
+  padding: 4px 10px;
+  line-height: 1.4;
+}
+
+[data-lang="bn"] .chip {
+  padding: 4px 10px;
+  line-height: 1.4;
+}
+
+/* Map legend & popup Bengali rendering */
+[data-lang="bn"] .map-legend {
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+[data-lang="bn"] .map-popup {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* Print font fallback */
+@media print {
+  [data-lang="bn"] .report-sheet {
+    font-family: "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", sans-serif !important;
+  }
+}
+

@@ -27,7 +27,7 @@ export const Topbar: React.FC<{ page: PageKey; onNavigate: (p: PageKey) => void 
   return (
     <header className="topbar" role="banner">
       <div className="topbar__title">
-        <small>ভূমি মন্ত্রণালয় · {t('app.department')}</small>
+        <small>{t('app.ministry')} · {t('app.department')}</small>
         <strong>{t(meta.titleKey)}</strong>
       </div>
 
@@ -43,6 +43,7 @@ export const Topbar: React.FC<{ page: PageKey; onNavigate: (p: PageKey) => void 
         >
           {t('lang.bn')}
         </button>
+        <span className="lang-divider" aria-hidden style={{ color: 'var(--ink-400)', padding: '0 2px', userSelect: 'none', fontWeight: 400 }}>|</span>
         <button
           className={`en-opt ${lang === 'en' ? 'is-active' : ''}`}
           onClick={() => setLang('en')}
@@ -69,7 +70,7 @@ export const Topbar: React.FC<{ page: PageKey; onNavigate: (p: PageKey) => void 
 
       {/* Profile */}
       <button className="topbar__user" onClick={() => setUserOpen(v => !v)}>
-        <div className="avatar" aria-hidden>এ</div>
+        <div className="avatar" aria-hidden>{lang === 'bn' ? 'তা' : 'T'}</div>
         <span className="who">
           <strong style={{ display: 'block' }}>{lang === 'bn' ? 'এস. এম. তানভীর' : 'S. M. Tanvir'}</strong>
           <small>{t('sidebar.user.role')} · {t('sidebar.user.district')}</small>
@@ -81,12 +82,13 @@ export const Topbar: React.FC<{ page: PageKey; onNavigate: (p: PageKey) => void 
              style={popoverStyle}>
           <strong style={{ display: 'block', marginBottom: 8 }}>{t('topbar.notifications')}</strong>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.85rem' }}>
-            <li>• {lang === 'bn' ? '৩টি নতুন বেদখল সতর্কতা' : '3 new encroachment alerts'}</li>
-            <li>• {lang === 'bn' ? '২টি মামলা লক হালনাগাদ' : '2 litigation locks updated'}</li>
-            <li>• {lang === 'bn' ? '১টি নতুন জালিয়াতি সন্দেহ' : '1 new fraud suspicion'}</li>
+            <li>• {t('notif.encroachment_new', { n: 3 })}</li>
+            <li>• {t('notif.litigation_updated', { n: 2 })}</li>
+            <li>• {t('notif.fraud_suspicion', { n: 1 })}</li>
           </ul>
         </div>
       )}
+
 
       {userOpen && (
         <div role="menu" style={popoverStyle}>

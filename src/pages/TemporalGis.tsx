@@ -89,7 +89,7 @@ export const TemporalGis: React.FC<{ onSelectPlot: (id: string | null) => void; 
       <div className="grid grid-2">
         <div className="card">
           <div className="card__title">
-            <h3>{t('temporal.explain.ndvi')}</h3>
+            <h3>{t('temporal.ndvi')}</h3>
             <span className="badge green"><span className="dot" /> NDVI {current.ndvi.toFixed(2)}</span>
           </div>
           <BarChart
@@ -99,7 +99,7 @@ export const TemporalGis: React.FC<{ onSelectPlot: (id: string | null) => void; 
         </div>
         <div className="card">
           <div className="card__title">
-            <h3>{t('temporal.explain.ndwi')}</h3>
+            <h3>{t('temporal.waterIndex')}</h3>
             <span className="badge blue"><span className="dot" /> NDWI {current.ndwi.toFixed(2)}</span>
           </div>
           <BarChart

@@ -368,6 +368,10 @@ export const en: Dict = {
   'hlt.fraud': 'Fraud risk',
   'hlt.history': 'Deed history',
   'hlt.recommendation': 'Recommendation',
+  'hlt.rec.legal': 'Verify court cases or mutation disputes in detail.',
+  'hlt.rec.physical': 'Closely monitor erosion or land loss to river.',
+  'hlt.rec.environmental': 'Review flood and environmental hazard management plan.',
+  'hlt.rec.fraud': 'Examine ownership chain and fraud risk alerts.',
   'hlt.scoreRange': 'Lower score = lower risk',
   'hlt.explain.legal': 'Analyzes deeds, mutations & dispute history.',
   'hlt.explain.physical': 'Considers erosion, flood & char formation history.',
@@ -432,14 +436,15 @@ export const en: Dict = {
   'rep.previousOwner': 'Previous owner',
   'rep.remarks': 'Remarks',
   'rep.warning': 'Warning',
-  'rep.warningBody': 'A portion of this plot has been lost to the river or is under dispute or has been flagged as encroachment.',
-  'rep.instruction': 'Land-related instructions:',
-  'rep.instruction1': 'No mutation of name by sale, gift or otherwise may be recorded elsewhere based on this report.',
-  'rep.landGovt': 'Ministry of Land, Government of the People\'s Republic of Bangladesh',
-  'rep.landOffice': 'Land Ownership & Title Management Authority',
-  'rep.footer': 'This report is digitally signed and verified. Do not accept any copy without the digital seal and signature.',
-  'rep.footerAddress': 'Land & Government Authority, Building No. 8, 0171 677071 | www.land.gov.bd',
-  'rep.landTitle': 'Land Title Report',
+  'rep.warningBody': 'A portion of this plot has been lost to river erosion or is in conflict with government boundary or flagged as encroachment.',
+  'rep.instruction': 'Land Title Preservation & Encumbrance Guidelines:',
+  'rep.instruction1': 'For sale, gift or mutation of this plot, a No Objection Certificate (NOC) is required from the relevant Circle Land Office.',
+  'rep.landGovt': "Government of the People's Republic of Bangladesh",
+  'rep.landOffice': 'Land Ownership & Title Verification Authority',
+  'rep.certificateTitle': 'Land Ownership & Encumbrance Verification Report',
+  'rep.footer': 'Note: This report is digitally verified. Scan the QR code to verify authenticity online.',
+  'rep.footerAddress': 'Land & Revenue Administration, Building No. 4, 02017 477071 | www.land.gov.bd',
+  'rep.landTitle': 'Assistant Sub-Registrar / Land Officer',
   'rep.recordHistory': 'Record history',
   'rep.circulation': 'Circulation',
   'rep.transactionType': 'Transaction type',
@@ -448,7 +453,8 @@ export const en: Dict = {
   'rep.validator': 'Validator',
   'rep.responsibleOfficer': 'Responsible Officer',
   'rep.landMinistry': 'Ministry of Land, Government of the People\'s Republic of Bangladesh',
-  'rep.citizenGreeting': 'Dear citizen, first addressed:',
+  'rep.citizenGreeting': 'For information of all concerned:',
+
 
   // ===== Toasts =====
   'toast.saved': 'Saved successfully',
@@ -520,4 +526,48 @@ export const en: Dict = {
 
   // === Module tagline (sidebar footer) ===
   'sidebar.tagline': 'Digital transformation of land administration',
+
+  // ===== Khas classification =====
+  'khas.classification.urban': 'Urban',
+  'khas.classification.rural': 'Rural',
+  'khas.classification.aquatic': 'Aquatic',
+  'khas.classification.agricultural': 'Agricultural',
+
+  // ===== Additional statuses =====
+  'common.status.active': 'Active',
+  'common.status.inactive': 'Inactive',
+  'common.status.pending': 'Pending',
+  'common.status.under_review': 'Under review',
+  'common.status.approved': 'Approved',
+  'common.status.rejected': 'Rejected',
+  'common.status.locked': 'Locked',
+  'common.status.released': 'Released',
+  'common.status.cleared': 'Cleared',
+  'common.status.disputed': 'Disputed',
+  'common.status.paid': 'Paid',
+  'common.status.overdue': 'Overdue',
+  'common.status.high_risk': 'High risk',
+  'common.status.medium_risk': 'Medium risk',
+  'common.status.low_risk': 'Low risk',
+  'common.status.submitted': 'Submitted',
+  'common.status.allocated': 'Allocated',
+  'common.status.vacant': 'Vacant',
+  'common.status.flagged': 'Flagged',
+  'common.status.compliant': 'Compliant',
+
+  // ===== Notifications =====
+  'notif.encroachment_new': '{n} new encroachment alerts',
+  'notif.litigation_updated': '{n} litigation locks updated',
+  'notif.fraud_suspicion': '{n} new fraud suspicion',
+
+  // ===== Additional common =====
+  'common.fatherName': "Father's Name",
+  'common.division': 'Division',
+  'common.thana': 'Thana / Upazila',
+  'common.allDistricts': 'All Districts',
+  'common.allUpazilas': 'All Upazilas',
+  'common.allMouzas': 'All Mouzas',
+  'common.serialNo': 'SL',
+  'common.findings': 'Findings',
+  'common.observations': 'Observations',
 };

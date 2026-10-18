@@ -203,11 +203,14 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
               plots.reduce<Record<string, number>>((acc, p) => { acc[p.district] = (acc[p.district] || 0) + 1; return acc; }, {})
             ).map(([dist, count]) => {
               const pct = (count / plots.length) * 100;
+              const plotSample = plots.find(p => p.district === dist);
               return (
                 <div key={dist}>
                   <div className="row between" style={{ marginBottom: 4 }}>
-                    <strong style={{ fontSize: '0.88rem' }}>{dist}</strong>
-                    <span className="muted text-xs">{count} {t('common.records')}</span>
+                    <strong style={{ fontSize: '0.88rem' }}>
+                      <BilingualName en={dist} bn={plotSample?.districtBn} />
+                    </strong>
+                    <span className="muted text-xs">{count.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')} {t('common.records')}</span>
                   </div>
                   <div className="progress"><div className="progress__fill" style={{ width: `${pct}%` }} /></div>
                 </div>

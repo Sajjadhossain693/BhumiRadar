@@ -84,7 +84,13 @@ export const FieldInspection: React.FC<{ onSelectPlot: (id: string | null) => vo
                     <td className="mono">{i.dueDate}</td>
                     <td className="mono">{i.completedOn || '—'}</td>
                     <td><StatusBadge status={i.status} size="sm" /></td>
-                    <td>{i.finding || <span className="muted text-xs">—</span>}</td>
+                    <td>
+                      {i.finding ? (
+                        i.finding === 'Compliant' ? t('common.status.compliant') :
+                        i.finding === 'Under review' ? t('common.status.under_review') :
+                        i.finding === 'Poyosti' ? t('shik.poyosti') : i.finding
+                      ) : <span className="muted text-xs">—</span>}
+                    </td>
                     <td>
                       <button className="btn btn-sm btn-outline" onClick={() => onSelectPlot(i.plotId)}>
                         <I.eye size={12} />

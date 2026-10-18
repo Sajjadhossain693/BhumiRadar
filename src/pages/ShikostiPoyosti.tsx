@@ -117,8 +117,8 @@ export const ShikostiPoyosti: React.FC<{ onSelectPlot: (id: string | null) => vo
             <thead>
               <tr>
                 <th>{t('common.plotNo')}</th>
-                <th><BilingualName en="District" bn="জেলা" /></th>
-                <th><BilingualName en="Upazila" bn="উপজেলা" /></th>
+                <th>{t('common.district')}</th>
+                <th>{t('common.upazila')}</th>
                 <th>{t('common.owner')}</th>
                 <th className="num">{t('shik.affectedArea')}</th>
                 <th>{t('common.status')}</th>

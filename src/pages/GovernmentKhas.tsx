@@ -61,9 +61,9 @@ export const GovernmentKhas: React.FC = () => {
               <tr>
                 <th>{t('khas.khasId')}</th>
                 <th>{t('khas.classification')}</th>
-                <th><BilingualName en="District" bn="জেলা" /></th>
-                <th><BilingualName en="Upazila" bn="উপজেলা" /></th>
-                <th><BilingualName en="Mouza" bn="মৌজা" /></th>
+                <th>{t('common.district')}</th>
+                <th>{t('common.upazila')}</th>
+                <th>{t('common.mouza')}</th>
                 <th className="num">{t('common.area')}</th>
                 <th>{t('khas.allocTo')}</th>
                 <th>{t('khas.leaseNo')}</th>
@@ -114,10 +114,10 @@ export const GovernmentKhas: React.FC = () => {
           <div className="field">
             <label>{t('khas.classification')}</label>
             <select className="select">
-              <option>urban</option>
-              <option>rural</option>
-              <option>aquatic</option>
-              <option>agricultural</option>
+              <option value="urban">{t('khas.classification.urban')}</option>
+              <option value="rural">{t('khas.classification.rural')}</option>
+              <option value="aquatic">{t('khas.classification.aquatic')}</option>
+              <option value="agricultural">{t('khas.classification.agricultural')}</option>
             </select>
           </div>
           <div className="field">

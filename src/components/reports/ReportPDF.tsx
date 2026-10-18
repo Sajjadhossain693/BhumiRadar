@@ -101,7 +101,7 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
           <div className="report-title">
             <div className="report-govt">{t('app.government')}</div>
             <div className="report-ministry">{t('app.ministry')}</div>
-            <div className="report-dept">{t('app.department')}</div>
+            <div className="report-dept">{t('rep.certificateTitle')}</div>
           </div>
         </div>
 
@@ -133,11 +133,11 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
         <table className="report-tbl">
           <thead>
             <tr>
-              <th style={{ width: 36 }}>{t('common.id')}</th>
-              <th>{t('rep.deedType')} / {t('common.deedNo')}</th>
+              <th style={{ width: 44 }}>{t('common.serialNo')}</th>
+              <th>{t('common.deedNo')} / {t('common.khatian')}</th>
               <th>{t('common.date')}</th>
               <th>{t('rep.previousOwner')} / {t('rep.presentOwner')}</th>
-              <th>{t('common.status')}</th>
+              <th>{t('common.status')} &amp; {t('common.note')}</th>
             </tr>
           </thead>
           <tbody>
@@ -157,9 +157,9 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
                   {d.status === 'flagged' ? (
                     <span className="report-chip red">{t('enc.level.high')} / {t('own.anomaly')}</span>
                   ) : d.status === 'under_review' ? (
-                    <span className="report-chip amber">{t('lit.status.active')} / {t('lit.status.released')}</span>
+                    <span className="report-chip amber">{t('common.status.under_review')} / {t('common.status.in_progress')}</span>
                   ) : (
-                    <span className="report-chip green">{t('lit.status.active')} / {t('common.status.approved')}</span>
+                    <span className="report-chip green">{t('common.status.approved')} / {t('common.status.cleared')}</span>
                   )}
                 </td>
               </tr>
@@ -173,7 +173,7 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
 
         {/* Warning */}
         <div className="report-warning">
-          <strong>{t('rep.warning')} / {t('rep.warning')}: </strong>
+          <strong>{lang === 'bn' ? 'সতর্কতা / Warning' : 'Warning / সতর্কতা'}: </strong>
           {t('rep.warningBody')}
         </div>
 
@@ -201,11 +201,11 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
                 </defs>
                 <circle cx="60" cy="60" r="55" fill="url(#seal-g)" stroke="#1e3a8a" strokeWidth="1.5" />
                 <circle cx="60" cy="60" r="48" fill="none" stroke="#1e3a8a" strokeWidth="0.8" strokeDasharray="2 2" />
-                <text x="60" y="40" textAnchor="middle" fontSize="9" fontWeight="700" fill="#1e3a8a">{t('app.department').slice(0, 12)}</text>
-                <text x="60" y="68" textAnchor="middle" fontSize="11" fontWeight="800" fill="#1e3a8a">{t('rep.landTitle')}</text>
-                <text x="60" y="82" textAnchor="middle" fontSize="7" fill="#1e3a8a">{t('rep.digitalSignature')}</text>
-                <text x="60" y="92" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{reportId}</text>
-                <text x="60" y="100" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{dateStr} {timeStr}</text>
+                <text x="60" y="38" textAnchor="middle" fontSize="8" fontWeight="700" fill="#1e3a8a">{lang === 'bn' ? 'ভূমি সহকারী কর্মকর্তা' : 'Assistant Land Officer'}</text>
+                <text x="60" y="65" textAnchor="middle" fontSize="9" fontWeight="800" fill="#1e3a8a">{t('rep.digitalSignature')}</text>
+                <text x="60" y="77" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{reportId}</text>
+                <text x="60" y="87" textAnchor="middle" fontSize="6.5" fill="#1e3a8a">{dateStr} {timeStr}</text>
+                <text x="60" y="99" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#1e3a8a">{lang === 'bn' ? 'ভূমি মন্ত্রণালয়' : 'Ministry of Land'}</text>
               </svg>
             </div>
             <div className="report-sig-line">{t('rep.signedBy')}</div>

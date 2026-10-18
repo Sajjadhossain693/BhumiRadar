@@ -187,7 +187,7 @@ export const OwnershipChain: React.FC<{ plotId: string | null; onSelectPlot: (id
         <h3 style={{ marginTop: 0 }}>{t('rep.presentOwner')}</h3>
         <div className="grid grid-4">
           <div><div className="muted text-xs">{t('common.name')}</div><strong><BilingualName en={selected.owner.name} bn={selected.owner.nameBn} /></strong></div>
-          <div><div className="muted text-xs">{t('fld.inspector') /* fatherName */} {t('common.note')}</div><strong>{selected.owner.fatherName}</strong></div>
+          <div><div className="muted text-xs">{t('common.fatherName')}</div><strong>{selected.owner.fatherName}</strong></div>
           <div><div className="muted text-xs">{t('cit.citizenNid')}</div><strong className="mono">{selected.owner.nid}</strong></div>
           <div><div className="muted text-xs">{t('common.area')}</div><strong>{selected.areaShotok} {t('units.shotok')} · {selected.areaDecimal} {t('units.decimal')}</strong></div>
         </div>

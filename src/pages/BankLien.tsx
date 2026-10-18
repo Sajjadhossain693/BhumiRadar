@@ -7,7 +7,7 @@ import { useToast } from '../components/ui/Toaster';
 import { Modal } from '../components/ui/Modal';
 
 export const BankLien: React.FC<{ onSelectPlot: (id: string | null) => void }> = ({ onSelectPlot }) => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { show } = useToast();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
@@ -48,19 +48,19 @@ export const BankLien: React.FC<{ onSelectPlot: (id: string | null) => void }> =
       <div className="grid grid-4 mb-16">
         <div className="kpi k-info">
           <div className="kpi__label">{t('kpi.bankLiens')}</div>
-          <div className="kpi__value">{data.filter(d => d.status === 'active').length}</div>
+          <div className="kpi__value">{data.filter(d => d.status === 'active').length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</div>
         </div>
         <div className="kpi k-gold">
           <div className="kpi__label">{t('common.status.pending')}</div>
-          <div className="kpi__value">{data.filter(d => d.status === 'pending').length}</div>
+          <div className="kpi__value">{data.filter(d => d.status === 'pending').length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</div>
         </div>
         <div className="kpi k-brand">
           <div className="kpi__label">{t('lien.outstanding')}</div>
-          <div className="kpi__value">{t('currency.bdt')} {data.reduce((s, d) => s + d.outstanding, 0).toLocaleString()}</div>
+          <div className="kpi__value">{t('currency.bdt')} {data.reduce((s, d) => s + d.outstanding, 0).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</div>
         </div>
         <div className="kpi k-success">
-          <div className="kpi__label">{t('common.status.released') || t('lit.status.released')}</div>
-          <div className="kpi__value">{data.filter(d => d.status === 'released').length}</div>
+          <div className="kpi__label">{t('common.status.released')}</div>
+          <div className="kpi__value">{data.filter(d => d.status === 'released').length.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</div>
         </div>
       </div>
 
@@ -90,8 +90,8 @@ export const BankLien: React.FC<{ onSelectPlot: (id: string | null) => void }> =
                     <td>{l.bank}<div className="muted text-xs">{l.branch}</div></td>
                     <td>{l.borrower}</td>
                     <td className="mono">{l.plotId}{plot && ` · ${plot.dag}`}</td>
-                    <td className="num">{t('currency.bdt')} {l.amount.toLocaleString()}</td>
-                    <td className="num">{t('currency.bdt')} {l.outstanding.toLocaleString()}</td>
+                    <td className="num">{t('currency.bdt')} {l.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</td>
+                    <td className="num">{t('currency.bdt')} {l.outstanding.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</td>
                     <td className="mono">{l.encumbranceNo}</td>
                     <td className="mono">{l.startDate}{l.endDate ? ` → ${l.endDate}` : ''}</td>
                     <td><StatusBadge status={l.status} size="sm" /></td>

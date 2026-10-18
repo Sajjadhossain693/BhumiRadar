@@ -18,10 +18,10 @@ export const PlotHealth: React.FC<{ plotId: string | null; onSelectPlot: (id: st
 
   const recommendation = useMemo(() => {
     const r: string[] = [];
-    if (selected.healthFactors.legal > 20) r.push(t('hlt.legal'));
-    if (selected.healthFactors.physical > 20) r.push(t('hlt.physical'));
-    if (selected.healthFactors.environmental > 20) r.push(t('hlt.environmental'));
-    if (selected.healthFactors.fraud > 20) r.push(t('hlt.fraud'));
+    if (selected.healthFactors.legal > 20) r.push(t('hlt.rec.legal'));
+    if (selected.healthFactors.physical > 20) r.push(t('hlt.rec.physical'));
+    if (selected.healthFactors.environmental > 20) r.push(t('hlt.rec.environmental'));
+    if (selected.healthFactors.fraud > 20) r.push(t('hlt.rec.fraud'));
     return r;
   }, [selected, t]);
 

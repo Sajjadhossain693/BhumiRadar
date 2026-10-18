@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const Timeline: React.FC<Props> = ({ years, value, onChange, onPlayToggle, playing }) => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const min = years[0];
   const max = years[years.length - 1];
   const pct = ((value - min) / (max - min)) * 100;
@@ -48,7 +48,7 @@ export const Timeline: React.FC<Props> = ({ years, value, onChange, onPlayToggle
         >
           {playing ? <I.pause /> : <I.play />}
         </button>
-        <strong>{t('temporal.year')}: {value}</strong>
+        <strong>{t('temporal.year')}: {lang === 'bn' ? value.toLocaleString('bn-BD', { useGrouping: false }) : value}</strong>
       </div>
       <div
         ref={trackRef}
@@ -59,7 +59,7 @@ export const Timeline: React.FC<Props> = ({ years, value, onChange, onPlayToggle
         <div className="timeline__thumb" style={{ left: `${pct}%` }} />
       </div>
       <div className="timeline__ticks">
-        {years.map(y => <span key={y}>{y}</span>)}
+        {years.map(y => <span key={y}>{lang === 'bn' ? y.toLocaleString('bn-BD', { useGrouping: false }) : y}</span>)}
       </div>
     </div>
   );

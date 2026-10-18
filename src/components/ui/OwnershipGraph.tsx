@@ -73,7 +73,7 @@ export const OwnershipGraph: React.FC<Props> = ({ nodes, edges }) => {
                 {name}
               </text>
               <text x={0} y={12} textAnchor="middle" fontSize="10.5" fill="#475569">
-                {n.date}
+                {n.date === 'present' ? (lang === 'bn' ? 'বর্তমান' : 'Present') : n.date}
               </text>
               <text x={0} y={-36} textAnchor="middle" fontSize="9.5" fill="#64748b">
                 {n.id}

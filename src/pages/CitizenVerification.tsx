@@ -45,27 +45,27 @@ export const CitizenVerification: React.FC<{ onSelectPlot: (id: string | null) =
           <div className="field">
             <label>{t('cit.district')}</label>
             <select className="select" value={district} onChange={e => { setDistrict(e.target.value); setUpazila(''); setMouza(''); }}>
-              <option value="">-- {t('common.all')} --</option>
+              <option value="">-- {t('common.allDistricts')} --</option>
               {districts.map(d => <option key={d.id} value={d.id}>{lang === 'en' ? d.en : d.bn}</option>)}
             </select>
           </div>
           <div className="field">
             <label>{t('cit.upazila')}</label>
             <select className="select" value={upazila} onChange={e => { setUpazila(e.target.value); setMouza(''); }} disabled={!district}>
-              <option value="">-- {t('common.all')} --</option>
+              <option value="">-- {t('common.allUpazilas')} --</option>
               {upazilas.map(u => <option key={u.id} value={u.id}>{lang === 'en' ? u.en : u.bn}</option>)}
             </select>
           </div>
           <div className="field">
             <label>{t('cit.mouza')}</label>
             <select className="select" value={mouza} onChange={e => setMouza(e.target.value)} disabled={!upazila}>
-              <option value="">-- {t('common.all')} --</option>
+              <option value="">-- {t('common.allMouzas')} --</option>
               {mouzas.map(m => <option key={m.id} value={m.id}>{lang === 'en' ? m.en : m.bn}</option>)}
             </select>
           </div>
           <div className="field">
-            <label>{t('cit.search.placeholder')}</label>
-            <input className="input" value={search} onChange={e => setSearch(e.target.value)} placeholder="PLT-DHK-001" />
+            <label>{t('common.plotNo')}</label>
+            <input className="input" value={search} onChange={e => setSearch(e.target.value)} placeholder={t('cit.search.placeholder')} />
           </div>
         </div>
         <div className="row gap-8">
