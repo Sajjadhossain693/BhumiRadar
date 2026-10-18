@@ -14,8 +14,19 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
   const [search, setSearch] = useState('');
   const [confirm, setConfirm] = useState<string | null>(null);
   const [dossierCase, setDossierCase] = useState<LitigationCase | null>(null);
+  const [activePlotId, setActivePlotId] = useState<string>('PLT-CXB-006');
   const [data, setData] = useState(litigation);
   const { show } = useToast();
+
+  const activePlot = plots.find(p => p.id === activePlotId) || plots.find(p => p.status === 'locked') || plots[0];
+  const matchingCase = data.find(c => c.plots.includes(activePlot.id)) || data[0];
+
+  const handleSelectPlotAndFocus = (plotId: string) => {
+    setActivePlotId(plotId);
+    onSelectPlot(plotId);
+    // Smooth scroll to land view
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
 
   const filtered = data.filter(c =>
     c.caseNo.toLowerCase().includes(search.toLowerCase()) ||
@@ -63,17 +74,117 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
         </div>
       </div>
 
-      {/* Map showing all plots with Litigation Lock demarcation */}
+      {/* Map showing all plots with Litigation Lock demarcation and Full Land View */}
       <div className="card mb-16" style={{ padding: 14 }}>
         <div className="card__title" style={{ marginBottom: 12 }}>
           <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <I.map size={18} /> {t('lit.title')} — {t('map.layers')}
+            <I.map size={18} /> {t('lit.fullLandViewTitle')} — {activePlot.id} ({t('rep.dagLbl')} {activePlot.dag})
           </h3>
-          <span className="badge" style={{ background: '#7c3aed22', color: '#7c3aed', fontWeight: 700 }}>
+          <span className="badge" style={{ background: '#7c3aed', color: '#ffffff', fontWeight: 700 }}>
             🔒 {data.filter(d => d.status === 'active').length} {t('lit.lockedPlots')}
           </span>
         </div>
-        <MapView plots={plots} onSelect={onSelectPlot} height={400} />
+        <MapView plots={plots} selectedId={activePlotId} onSelect={handleSelectPlotAndFocus} height={420} />
+
+        {/* Selected Land Cadastral & Legal Full Dossier */}
+        {activePlot && (
+          <div style={{
+            marginTop: 14,
+            padding: 16,
+            background: '#ffffff',
+            border: '2px solid #7c3aed',
+            borderRadius: 10,
+            boxShadow: '0 4px 12px rgba(124, 58, 237, 0.12)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+              <div>
+                <span className="badge" style={{ background: '#7c3aed', color: '#ffffff', fontWeight: 700, padding: '4px 10px', fontSize: '0.78rem' }}>
+                  🔍 {t('lit.fullLandViewTitle')}
+                </span>
+                <h3 style={{ margin: '6px 0 2px 0', color: '#4c1d95' }}>
+                  {activePlot.id} · {t('rep.dagLbl')} {activePlot.dag} ({activePlot.areaShotok} {t('units.shotok')} / {activePlot.areaDecimal} {t('units.decimal')})
+                </h3>
+                <div className="muted text-xs">
+                  <BilingualName en={activePlot.district} bn={activePlot.districtBn} /> · <BilingualName en={activePlot.upazila} bn={activePlot.upazilaBn} /> · <BilingualName en={activePlot.mouza} bn={activePlot.mouzaBn} /> · {t('rep.khatianLbl')} {activePlot.khatian}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => {
+                    onSelectPlot(activePlot.id);
+                    window.location.hash = 'reports';
+                  }}
+                  style={{ borderColor: '#7c3aed', color: '#7c3aed', fontWeight: 600 }}
+                >
+                  📄 {lang === 'bn' ? 'জমির পূর্ণাঙ্গ প্রতিবেদন' : 'Full Land Certificate'}
+                </button>
+                <button
+                  className="btn btn-sm btn-outline"
+                  onClick={() => {
+                    onSelectPlot(activePlot.id);
+                    window.location.hash = 'ownershipChain';
+                  }}
+                  style={{ borderColor: '#059669', color: '#059669', fontWeight: 600 }}
+                >
+                  🔗 {lang === 'bn' ? 'স্বত্বের ধারাবাহিকতা' : 'Ownership Chain'}
+                </button>
+              </div>
+            </div>
+
+            {/* Restraining Injunction Notice Banner */}
+            <div style={{
+              background: '#f5f3ff',
+              borderLeft: '4px solid #7c3aed',
+              padding: '10px 14px',
+              borderRadius: 6,
+              marginBottom: 12,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 10,
+            }}>
+              <div>
+                <div style={{ color: '#5b21b6', fontWeight: 700, fontSize: '0.9rem' }}>
+                  🔒 {t('lit.subRegLockNotice')}
+                </div>
+                <div style={{ color: '#6d28d9', fontSize: '0.8rem', marginTop: 2 }}>
+                  {matchingCase ? (
+                    <>
+                      <b>{t('lit.caseNo')}:</b> {matchingCase.caseNo} ({matchingCase.court}) • <b>{t('lit.orderType')}:</b> {t(`lit.orderType.${matchingCase.orderType}`)} • <b>{t('lit.lockDate')}:</b> {matchingCase.lockDate}
+                    </>
+                  ) : (
+                    lang === 'bn' ? 'আদালতের নিষেধাজ্ঞার কারণে এই দাগের নামজারি ও দলিল নিবন্ধন স্থগিত।' : 'Registration & transfer stayed by court order.'
+                  )}
+                </div>
+              </div>
+              <span className="chip" style={{ background: '#dc2626', color: '#ffffff', fontWeight: 700 }}>
+                ⛔ {t('lit.transferProhibited')}
+              </span>
+            </div>
+
+            {/* Plot Metadata Grid */}
+            <div className="grid grid-4" style={{ gap: 10, fontSize: '0.82rem' }}>
+              <div style={{ background: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid var(--ink-200)' }}>
+                <div className="muted">{t('common.owner')} (রেকর্ডীয়)</div>
+                <div style={{ fontWeight: 700 }}><BilingualName en={activePlot.owner.name} bn={activePlot.owner.nameBn} /></div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid var(--ink-200)' }}>
+                <div className="muted">{t('rep.khatianLbl')}</div>
+                <div style={{ fontWeight: 700 }} className="mono">{activePlot.khatian}</div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid var(--ink-200)' }}>
+                <div className="muted">{t('common.area')}</div>
+                <div style={{ fontWeight: 700 }}>{activePlot.areaShotok} {t('units.shotok')} ({activePlot.areaDecimal} {t('units.decimal')})</div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid var(--ink-200)' }}>
+                <div className="muted">GPS কোঅর্ডিনেট</div>
+                <div style={{ fontWeight: 700 }} className="mono">{activePlot.coords.lat.toFixed(4)}, {activePlot.coords.lng.toFixed(4)}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Litigation Cases Table */}
@@ -109,9 +220,15 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
                     {c.plots.map(pid => (
                       <span
                         key={pid}
-                        onClick={() => onSelectPlot(pid)}
+                        onClick={() => handleSelectPlotAndFocus(pid)}
                         className="chip"
-                        style={{ background: '#ede9fe', color: '#5b21b6', cursor: 'pointer', margin: '2px' }}
+                        style={{
+                          background: pid === activePlotId ? '#7c3aed' : '#ede9fe',
+                          color: pid === activePlotId ? '#ffffff' : '#5b21b6',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          margin: '2px',
+                        }}
                       >
                         🔒 {pid}
                       </span>
@@ -121,6 +238,16 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
                   <td><StatusBadge status={c.status} /></td>
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => {
+                          if (c.plots[0]) handleSelectPlotAndFocus(c.plots[0]);
+                        }}
+                        title={t('map.fullLandView')}
+                        style={{ padding: '4px 8px', fontSize: '0.75rem', borderColor: '#7c3aed', color: '#7c3aed', fontWeight: 600 }}
+                      >
+                        <I.pin size={13} /> {t('map.fullLandView')}
+                      </button>
                       <button
                         className="btn btn-sm btn-outline"
                         onClick={() => setDossierCase(c)}
@@ -180,7 +307,7 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
                 <span style={{ color: '#b91c1c', fontSize: '0.75rem', fontWeight: 600 }}>
                   ⛔ {t('lit.transferProhibited')}
                 </span>
-                <button className="btn btn-outline btn-sm" onClick={() => onSelectPlot(id)}>
+                <button className="btn btn-outline btn-sm" onClick={() => handleSelectPlotAndFocus(id)} style={{ borderColor: '#7c3aed', color: '#7c3aed', fontWeight: 600 }}>
                   <I.pin size={14} /> {t('map.fullLandView')}
                 </button>
               </div>
@@ -268,7 +395,7 @@ export const Litigation: React.FC<{ onSelectPlot: (id: string | null) => void }>
                         className="btn btn-sm btn-primary"
                         onClick={() => {
                           setDossierCase(null);
-                          onSelectPlot(pid);
+                          handleSelectPlotAndFocus(pid);
                         }}
                       >
                         <I.pin size={12} /> {t('map.fullLandView')}

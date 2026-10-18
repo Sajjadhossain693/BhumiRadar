@@ -4,6 +4,7 @@ import { I } from './Icons';
 import type { Plot, UnusualActivity } from '../../data/types';
 import { BilingualName } from './StatusBadge';
 import { litigation, liens } from '../../data/seed';
+import { Modal } from './Modal';
 
 type Layer = 'cadastral' | 'osm' | 'satellite' | 'erosion';
 type OwnershipFilter = 'all' | 'khas' | 'malikana' | 'locked' | 'unusual';
@@ -45,6 +46,16 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
   const [simulatedAlert, setSimulatedAlert] = useState<UnusualActivity | null>(null);
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [liveTimestamp, setLiveTimestamp] = useState<string>('10:45:12');
+
+  // Floating Cadastral Search Widget (Image 1) states
+  const [cadastralCollapsed, setCadastralCollapsed] = useState(false);
+  const [selectedDivision, setSelectedDivision] = useState('dhaka');
+  const [selectedDistrict, setSelectedDistrict] = useState('dhaka');
+  const [selectedUpazila, setSelectedUpazila] = useState('savar');
+  const [selectedMouza, setSelectedMouza] = useState('Hemayetpur');
+  const [selectedSheet, setSelectedSheet] = useState('১');
+  const [showLandUseModal, setShowLandUseModal] = useState(false);
+  const [showZoningModal, setShowZoningModal] = useState(false);
 
   const leafletContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapRef = useRef<any>(null);
@@ -186,40 +197,72 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
       const hasAnomaly = Boolean(p.unusualActivity || (simulatedAlert && simulatedAlert.plotId === p.id));
       const isSelected = p.id === selectedId;
 
-      // Color scheme:
+      // Active lock
       const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(p.id)) || (p.status === 'locked' ? litigation[0] : null);
       const isLocked = Boolean(activeLock || p.status === 'locked');
 
+      // User instruction:
+      // 1. Dokholkrito (encroached) & Disputed ownership land MUST be LAL (RED)
+      const isEncroachedOrDisputed = p.status === 'encroached' || p.status === 'disputed' || hasAnomaly;
+
+      // 2. Bangon (shikosti / river erosion) must be separated with distinct color
+      const isErosion = p.status === 'shikosti' || p.erosion > 30;
+
       // Color scheme:
-      // Anomaly: Bright Red pulse
-      // Locked: Royal Purple
-      // Khas: Golden Amber
-      // Malikana: Emerald Green
-      const color = hasAnomaly ? '#dc2626' : isLocked ? '#7c3aed' : isKhas ? '#d97706' : '#059669';
-      const fillColor = hasAnomaly ? '#ef4444' : isLocked ? '#8b5cf6' : isKhas ? '#f59e0b' : '#10b981';
+      // - Encroached / Disputed Ownership: LAL (RED - #dc2626)
+      // - River Erosion / Shikosti: Cyan / River Blue (#0284c7)
+      // - Locked: Royal Purple (#7c3aed)
+      // - Khas: Golden Amber (#d97706)
+      // - Malikana: Emerald Green (#059669)
+      let color = '#059669';
+      let fillColor = '#10b981';
+
+      if (isEncroachedOrDisputed) {
+        color = '#dc2626';
+        fillColor = '#ef4444';
+      } else if (isErosion) {
+        color = '#0284c7';
+        fillColor = '#38bdf8';
+      } else if (isLocked) {
+        color = '#7c3aed';
+        fillColor = '#8b5cf6';
+      } else if (isKhas) {
+        color = '#d97706';
+        fillColor = '#f59e0b';
+      }
 
       const polygon = L.polygon(latlngs, {
         color: color,
-        weight: hasAnomaly ? 4 : isLocked ? 3.5 : isSelected ? 3.5 : 2,
+        weight: isEncroachedOrDisputed ? 4 : isLocked ? 3.5 : isSelected ? 3.5 : 2,
         fillColor: fillColor,
-        fillOpacity: hasAnomaly ? 0.5 : isLocked ? 0.4 : isKhas ? 0.35 : 0.25,
-        dashArray: hasAnomaly ? '6, 4' : isLocked ? '4, 4' : isKhas ? '5, 5' : undefined,
+        fillOpacity: isEncroachedOrDisputed ? 0.55 : isErosion ? 0.5 : isLocked ? 0.45 : isKhas ? 0.35 : 0.25,
+        dashArray: isEncroachedOrDisputed ? '6, 4' : isErosion ? '4, 4' : isLocked ? '4, 4' : isKhas ? '5, 5' : undefined,
       });
 
-      // Mark the land with permanent tooltip when anomaly or locked
-      if (hasAnomaly) {
+      // Mark the land with permanent tooltip when anomaly, encroached, erosion, or locked
+      if (isEncroachedOrDisputed) {
         polygon.bindTooltip(
-          `<div style="font-weight:700; color:#b91c1c; font-size:11.5px; padding:2px;">🚨 ${lang === 'bn' ? 'অস্বাভাবিক দাগ' : 'Alert Dag'} ${p.dag} (${p.areaShotok} ${t('units.shotok')})</div>`,
+          `<div style="font-weight:700; color:#b91c1c; font-size:11.5px; padding:2px;">🚨 ${lang === 'bn' ? 'দখলকৃত/বিরোধপূর্ণ দাগ' : 'Encroached/Disputed'} ${p.dag}</div>`,
           { permanent: true, direction: 'top', className: 'anomaly-tooltip' }
+        );
+      } else if (isErosion) {
+        polygon.bindTooltip(
+          `<div style="font-weight:700; color:#ffffff; font-size:11px; padding:2px; background:#0284c7; border-radius:4px;">🌊 ${lang === 'bn' ? 'নদী ভাঙন (শিকস্তি)' : 'River Erosion'} ${p.dag}</div>`,
+          { permanent: true, direction: 'top' }
         );
       } else if (isLocked) {
         polygon.bindTooltip(
           `<div style="font-weight:700; color:#ffffff; font-size:11px; padding:2px; background:#7c3aed; border-radius:4px;">🔒 ${lang === 'bn' ? 'লককৃত দাগ' : 'Locked Dag'} ${p.dag}</div>`,
           { permanent: true, direction: 'top' }
         );
+      } else if (isKhas) {
+        polygon.bindTooltip(
+          `<div style="font-weight:700; color:#ffffff; font-size:11px; padding:2px; background:#d97706; border-radius:4px;">🏛️ ${lang === 'bn' ? 'খাস জমি' : 'Govt Khas'} ${p.dag}</div>`,
+          { permanent: false, direction: 'center' }
+        );
       } else {
         polygon.bindTooltip(
-          `<div style="font-weight:600; font-size:11px;">${isKhas ? '🏛️' : '👤'} ${p.dag}</div>`,
+          `<div style="font-weight:600; font-size:11px;">👤 ${p.dag}</div>`,
           { permanent: false, direction: 'center' }
         );
       }
@@ -227,7 +270,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
       const popupContent = `
         <div style="font-family: inherit; font-size: 13px; line-height: 1.5; min-width: 220px;">
           <div style="font-weight: 700; color: ${color}; font-size: 14px; margin-bottom: 4px;">
-            ${hasAnomaly ? '🚨 ' + t('map.live.anomalyDetected') : isLocked ? '🔒 ' + t('lit.lockActiveNotice') : isKhas ? '🏛️ ' + t('map.ownership.khas') : '👤 ' + t('map.ownership.malikana')}
+            ${isEncroachedOrDisputed ? '🚨 ' + (lang === 'bn' ? 'দখলকৃত / বিরোধপূর্ণ জমি' : 'Encroached / Disputed Land') : isErosion ? '🌊 ' + (lang === 'bn' ? 'নদী ভাঙন / শিকস্তি জমি' : 'River Erosion (Shikosti)') : isLocked ? '🔒 ' + t('lit.lockActiveNotice') : isKhas ? '🏛️ ' + t('map.ownership.khas') : '👤 ' + t('map.ownership.malikana')}
           </div>
           <div><b>${t('rep.dagLbl')}:</b> ${p.dag} (${p.id})</div>
           <div><b>${t('rep.khatianLbl')}:</b> ${p.khatian}</div>
@@ -485,9 +528,13 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
               <pattern id="malikanaHatch" width="12" height="12" patternUnits="userSpaceOnUse">
                 <circle cx="6" cy="6" r="1.5" fill="#059669" opacity="0.3" />
               </pattern>
-              {/* Unusual Activity Red Cross-Hatch */}
+              {/* Encroached & Disputed Red Cross-Hatch */}
               <pattern id="unusualHatch" width="10" height="10" patternTransform="rotate(-45 0 0)" patternUnits="userSpaceOnUse">
                 <line x1="0" y1="0" x2="0" y2="10" stroke="#dc2626" strokeWidth="3" opacity="0.45" />
+              </pattern>
+              {/* River Erosion Cyan Wave Pattern */}
+              <pattern id="erosionHatch" width="14" height="14" patternUnits="userSpaceOnUse">
+                <path d="M 0 7 Q 3.5 3 7 7 T 14 7" fill="none" stroke="#0284c7" strokeWidth="2" opacity="0.6" />
               </pattern>
               {/* River gradient */}
               <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
@@ -528,9 +575,12 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                 const isSelected = selectedId === p.id;
                 const isKhas = p.ownershipType === 'khas';
                 const hasAnomaly = Boolean(p.unusualActivity || (simulatedAlert && simulatedAlert.plotId === p.id));
+                const isEncroachedOrDisputed = p.status === 'encroached' || p.status === 'disputed' || hasAnomaly;
+                const isErosion = p.status === 'shikosti' || p.erosion > 30;
+                const isLocked = p.status === 'locked' || litigation.some(c => c.status === 'active' && c.plots.includes(p.id));
 
-                const stroke = hasAnomaly ? '#dc2626' : isKhas ? '#b45309' : '#059669';
-                const strokeWidth = hasAnomaly ? 4 : isSelected ? 3.5 : isKhas ? 2.5 : 1.8;
+                const stroke = isEncroachedOrDisputed ? '#dc2626' : isErosion ? '#0284c7' : isLocked ? '#7c3aed' : isKhas ? '#b45309' : '#059669';
+                const strokeWidth = isEncroachedOrDisputed ? 4 : isLocked ? 3.5 : isSelected ? 3.5 : isKhas ? 2.5 : 1.8;
 
                 const cx = pts.reduce((s, pt) => s + pt.x, 0) / pts.length;
                 const cy = pts.reduce((s, pt) => s + pt.y, 0) / pts.length;
@@ -540,19 +590,19 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                     {/* Base Color Fill */}
                     <path
                       d={d}
-                      fill={hasAnomaly ? 'rgba(239, 68, 68, 0.3)' : isKhas ? 'rgba(245, 158, 11, 0.18)' : 'rgba(16, 185, 129, 0.15)'}
+                      fill={isEncroachedOrDisputed ? 'rgba(239, 68, 68, 0.35)' : isErosion ? 'rgba(56, 189, 248, 0.35)' : isLocked ? 'rgba(139, 92, 246, 0.25)' : isKhas ? 'rgba(245, 158, 11, 0.22)' : 'rgba(16, 185, 129, 0.15)'}
                     />
                     {/* Pattern Overlay */}
                     <path
                       d={d}
-                      fill={hasAnomaly ? 'url(#unusualHatch)' : isKhas ? 'url(#khasHatch)' : 'url(#malikanaHatch)'}
+                      fill={isEncroachedOrDisputed ? 'url(#unusualHatch)' : isErosion ? 'url(#erosionHatch)' : isKhas ? 'url(#khasHatch)' : 'url(#malikanaHatch)'}
                       stroke={stroke}
                       strokeWidth={strokeWidth}
-                      strokeDasharray={hasAnomaly ? '6 3' : isKhas ? '5 3' : undefined}
+                      strokeDasharray={isEncroachedOrDisputed ? '6 3' : isErosion ? '4 3' : isKhas ? '5 3' : undefined}
                     />
 
-                    {/* Live Anomaly Pulsing Beacon Ring */}
-                    {hasAnomaly && (
+                    {/* Live Encroachment / Anomaly Pulsing Beacon Ring */}
+                    {isEncroachedOrDisputed && (
                       <g transform={`translate(${cx} ${cy})`}>
                         <circle r="32" fill="none" stroke="#ef4444" strokeWidth="3" opacity="0.75">
                           <animate attributeName="r" from="14" to="46" dur="1.8s" repeatCount="indefinite" />
@@ -566,12 +616,12 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                     {/* Plot Label & Full Land Tag */}
                     <g>
                       <rect
-                        x={cx - 44}
+                        x={cx - 46}
                         y={cy - 20}
-                        width="88"
+                        width="92"
                         height="20"
                         rx="4"
-                        fill={hasAnomaly ? '#dc2626' : 'rgba(255,255,255,0.95)'}
+                        fill={isEncroachedOrDisputed ? '#dc2626' : isErosion ? '#0284c7' : isLocked ? '#7c3aed' : 'rgba(255,255,255,0.95)'}
                         stroke={stroke}
                         strokeWidth="1.2"
                       />
@@ -581,10 +631,10 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                         textAnchor="middle"
                         fontSize="9.5"
                         fontWeight="700"
-                        fill={hasAnomaly ? '#ffffff' : stroke}
+                        fill={isEncroachedOrDisputed || isErosion || isLocked ? '#ffffff' : stroke}
                         style={{ fontFamily: 'var(--font-bn)' }}
                       >
-                        {hasAnomaly ? `🚨 ${lang === 'bn' ? 'অস্বাভাবিক' : 'Alert'}` : isKhas ? '🏛️ খাস' : '👤 মালিকানা'}
+                        {isEncroachedOrDisputed ? `🚨 ${lang === 'bn' ? 'দখলকৃত (লাল)' : 'Encroached'}` : isErosion ? `🌊 ${lang === 'bn' ? 'ভাঙন (শিকস্তি)' : 'Erosion'}` : isLocked ? `🔒 ${lang === 'bn' ? 'লককৃত' : 'Locked'}` : isKhas ? '🏛️ খাস জমি' : '👤 মালিকানা'}
                       </text>
                       <text
                         x={cx}
@@ -592,7 +642,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                         textAnchor="middle"
                         fontSize="10.5"
                         fontWeight="700"
-                        fill={hasAnomaly ? '#dc2626' : '#0f172a'}
+                        fill={isEncroachedOrDisputed ? '#dc2626' : isErosion ? '#0284c7' : '#0f172a'}
                         style={{ fontFamily: 'var(--font-en)' }}
                       >
                         {p.dag} ({p.areaShotok} শতক)
@@ -619,6 +669,82 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
             </g>
           </svg>
         )}
+
+        {/* Floating Cadastral Mouza Search Widget (Image 1 Style) */}
+        <div className={`cadastral-search-widget ${cadastralCollapsed ? 'collapsed' : ''}`}>
+          <div className="cadastral-search-header">
+            <span>📐 {t('cadastral.searchTitle')}</span>
+            <button
+              onClick={() => setCadastralCollapsed(c => !c)}
+              title={cadastralCollapsed ? 'Expand' : 'Collapse'}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--ink-700)' }}
+            >
+              {cadastralCollapsed ? '➕' : '➖'}
+            </button>
+          </div>
+          {!cadastralCollapsed && (
+            <div className="cadastral-search-body">
+              <div className="cadastral-field">
+                <label>{t('common.division')}</label>
+                <select value={selectedDivision} onChange={e => setSelectedDivision(e.target.value)}>
+                  <option value="dhaka">{lang === 'bn' ? 'ঢাকা' : 'Dhaka'}</option>
+                  <option value="sylhet">{lang === 'bn' ? 'সিলেট' : 'Sylhet'}</option>
+                  <option value="rajshahi">{lang === 'bn' ? 'রাজশাহী' : 'Rajshahi'}</option>
+                  <option value="khulna">{lang === 'bn' ? 'খুলনা' : 'Khulna'}</option>
+                </select>
+              </div>
+              <div className="cadastral-field">
+                <label>{t('common.district')}</label>
+                <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
+                  <option value="dhaka">{lang === 'bn' ? 'ঢাকা' : 'Dhaka'}</option>
+                  <option value="savar">{lang === 'bn' ? 'সাভার' : 'Savar'}</option>
+                </select>
+              </div>
+              <div className="cadastral-field">
+                <label>{t('common.thana')}</label>
+                <select value={selectedUpazila} onChange={e => setSelectedUpazila(e.target.value)}>
+                  <option value="savar">{lang === 'bn' ? 'সাভার' : 'Savar'}</option>
+                  <option value="dhamrai">{lang === 'bn' ? 'ধামরাই' : 'Dhamrai'}</option>
+                  <option value="keraniganj">{lang === 'bn' ? 'কেরাণীগঞ্জ' : 'Keraniganj'}</option>
+                </select>
+              </div>
+              <div className="cadastral-field">
+                <label>{t('common.mouza')}</label>
+                <select value={selectedMouza} onChange={e => setSelectedMouza(e.target.value)}>
+                  <option value="Hemayetpur">{lang === 'bn' ? 'হেমায়েতপুর' : 'Hemayetpur'}</option>
+                  <option value="Balia">{lang === 'bn' ? 'বালিয়া' : 'Balia'}</option>
+                  <option value="Kalatia">{lang === 'bn' ? 'কলাতিয়া' : 'Kalatia'}</option>
+                </select>
+              </div>
+              <div className="cadastral-field">
+                <label>{t('cadastral.sheetNo')}</label>
+                <input value={selectedSheet} onChange={e => setSelectedSheet(e.target.value)} />
+              </div>
+              <div className="cadastral-field">
+                <label>{t('cadastral.dagNo')}</label>
+                <select
+                  value={selectedId || ''}
+                  onChange={e => {
+                    if (e.target.value) focusPlot(e.target.value);
+                  }}
+                >
+                  <option value="">-- {lang === 'bn' ? 'দাগ নির্বাচন করুন' : 'Select Dag'} --</option>
+                  {plots.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {lang === 'bn' ? 'দাগ' : 'Dag'} {p.dag} ({p.id}) - {p.ownershipType === 'khas' ? (lang === 'bn' ? '🏛️ খাস' : 'Khas') : p.status === 'encroached' ? (lang === 'bn' ? '🚨 বেদখল' : 'Encroached') : p.status === 'shikosti' ? (lang === 'bn' ? '🌊 শিকস্তি' : 'Shikosti') : (lang === 'bn' ? '👤 মালিকানা' : 'Private')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button className="btn-cadastral-use" onClick={() => setShowLandUseModal(true)}>
+                📊 {t('cadastral.landUseSummary')}
+              </button>
+              <button className="btn-cadastral-zoning" onClick={() => setShowZoningModal(true)}>
+                🧭 {t('cadastral.zoningSummary')}
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Map Zoom & Full Land View Controls */}
         <div className="map-controls" style={{ zIndex: 10 }}>
@@ -657,7 +783,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
           )}
         </div>
 
-        {/* Legend: Khas vs Malikana vs Anomaly */}
+        {/* Legend: 5 Distinct Categories matching user request */}
         {showLegend && (
           <div className="map-legend" style={{ zIndex: 10 }} aria-label={t('temporal.legend')}>
             <strong style={{ fontSize: '0.8rem', color: 'var(--ink-900)' }}>{t('temporal.legend')}</strong>
@@ -666,16 +792,20 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
               <span>🏛️ {t('map.legend.khas')}</span>
             </div>
             <div className="map-legend__item">
-              <span className="map-legend__swatch" style={{ background: '#10b981', borderColor: '#059669' }} />
-              <span>👤 {t('map.legend.malikana')}</span>
+              <span className="map-legend__swatch" style={{ background: '#ef4444', borderColor: '#dc2626' }} />
+              <span style={{ color: '#b91c1c', fontWeight: 700 }}>🚨 {t('map.legend.encroachedDisputed')}</span>
+            </div>
+            <div className="map-legend__item">
+              <span className="map-legend__swatch" style={{ background: '#38bdf8', borderColor: '#0284c7' }} />
+              <span style={{ color: '#0369a1', fontWeight: 600 }}>🌊 {t('map.legend.riverErosion')}</span>
             </div>
             <div className="map-legend__item">
               <span className="map-legend__swatch" style={{ background: '#8b5cf6', borderColor: '#7c3aed' }} />
               <span>🔒 {t('map.legend.locked')}</span>
             </div>
             <div className="map-legend__item">
-              <span className="map-legend__swatch" style={{ background: '#ef4444', borderColor: '#dc2626' }} />
-              <span>🚨 {t('map.legend.unusual')}</span>
+              <span className="map-legend__swatch" style={{ background: '#10b981', borderColor: '#059669' }} />
+              <span>👤 {t('map.legend.malikana')}</span>
             </div>
           </div>
         )}
@@ -833,6 +963,83 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
           </div>
         )}
       </div>
+
+      {/* Modal: Land Use Summary (Image 1 "ভূমি ব্যবহারের সারাংশ") */}
+      {showLandUseModal && (
+        <Modal
+          open={showLandUseModal}
+          onClose={() => setShowLandUseModal(false)}
+          title={`📊 ${t('cadastral.landUseTitle')} — ${selectedMouza} (${t('cadastral.sheetNo')}: ${selectedSheet})`}
+          size="md"
+          footer={
+            <button className="btn btn-primary" onClick={() => setShowLandUseModal(false)}>
+              {t('common.close')}
+            </button>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p className="muted" style={{ fontSize: '0.85rem' }}>
+              {lang === 'bn'
+                ? `উপগ্রহ চিত্র ও সর্বশেষ ক্যাডাস্ট্রাল জরিপ অনুযায়ী ${selectedMouza} মৌজার মোট ১২৪টি দাগের শ্রেণিভিত্তিক পরিসংখ্যান:`
+                : `Land classification metrics for ${selectedMouza} mouza based on latest cadastral survey and satellite imagery:`}
+            </p>
+            <div className="grid grid-2" style={{ gap: 10 }}>
+              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: 12, borderRadius: 8 }}>
+                <div style={{ fontSize: '0.8rem', color: '#166534', fontWeight: 600 }}>🌾 {lang === 'bn' ? 'কৃষি জমি' : 'Agricultural Land'}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#14532d' }}>৬২.৪% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৭৮টি দাগ)</span></div>
+              </div>
+              <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
+                <div style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>🏡 {lang === 'bn' ? 'আবাসিক ও বসতবাড়ি' : 'Residential'}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>২৫.৬% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৩২টি দাগ)</span></div>
+              </div>
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: 12, borderRadius: 8 }}>
+                <div style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600 }}>🏛️ {lang === 'bn' ? 'সরকারি খাস জমি / খাল' : 'Govt Khas / Canals'}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#b45309' }}>৮.০% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(১০টি দাগ)</span></div>
+              </div>
+              <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: 12, borderRadius: 8 }}>
+                <div style={{ fontSize: '0.8rem', color: '#0369a1', fontWeight: 600 }}>🌊 {lang === 'bn' ? 'নদীগর্ভে বিলীন (শিকস্তি)' : 'River Erosion (Shikosti)'}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0284c7' }}>৪.০% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৪টি দাগ)</span></div>
+              </div>
+            </div>
+            <div style={{ background: '#f1f5f9', padding: 10, borderRadius: 6, fontSize: '0.8rem' }}>
+              <b>💡 {lang === 'bn' ? 'ক্যাডাস্ট্রাল নোট' : 'Cadastral Note'}:</b> {lang === 'bn' ? 'এই মৌজার সকল খাস জমি ও খাল ভূমি মন্ত্রণালয়ের ডিজিটাল রেকর্ড অনুযায়ী জিও-ফেন্সিং দ্বারা সুরক্ষিত।' : 'All khas lands in this mouza are monitored via digital geofencing.'}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal: Land Zoning Summary (Image 1 "ভূমি জোনিং সারাংশ") */}
+      {showZoningModal && (
+        <Modal
+          open={showZoningModal}
+          onClose={() => setShowZoningModal(false)}
+          title={`🧭 ${t('cadastral.zoningTitle')} — ${selectedMouza}`}
+          size="md"
+          footer={
+            <button className="btn btn-primary" onClick={() => setShowZoningModal(false)}>
+              {t('common.close')}
+            </button>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ borderLeft: '4px solid #d97706', background: '#fffbeb', padding: 12, borderRadius: 6 }}>
+              <h4 style={{ margin: '0 0 4px 0', color: '#b45309' }}>
+                {lang === 'bn' ? 'ভূমি জোনিং শ্রেণি: গ্রামীণ মিশ্র ও কৃষি অঞ্চল (Zone-Agri/Rural)' : 'Zoning Classification: Mixed Rural & Agriculture'}
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#78350f' }}>
+                {lang === 'bn'
+                  ? 'জাতীয় ভূমি জোনিং প্রবিধান ও মাস্টারপ্ল্যান অনুযায়ী এই মৌজায় কৃষি জমি অকৃষি কাজে রূপান্তরে পূর্বানুমতি বাধ্যতামূলক।'
+                  : 'Prior clearance required for converting agricultural parcels under National Land Zoning policy.'}
+              </p>
+            </div>
+            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div><b>🛡️ {lang === 'bn' ? 'পরিবেশগত সংবেদনশীলতা' : 'Eco Sensitivity'}:</b> <span className="chip">{lang === 'bn' ? 'মাঝারি (জলাশয় ও খাল সংলগ্ন)' : 'Moderate'}</span></div>
+              <div><b>🌊 {lang === 'bn' ? 'প্লাবনভূমি সতর্কতা' : 'Floodplain Warning'}:</b> <span className="chip" style={{ background: '#fef2f2', color: '#b91c1c' }}>{lang === 'bn' ? 'বর্ষায় নিম্নভূমি এলাকা প্লাবিত হয়' : 'Seasonal Submergence'}</span></div>
+              <div><b>📜 {lang === 'bn' ? 'মাস্টারপ্ল্যান কোড' : 'Masterplan Code'}:</b> <span className="mono">RAJUK-DMDP-2024-SV-08</span></div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

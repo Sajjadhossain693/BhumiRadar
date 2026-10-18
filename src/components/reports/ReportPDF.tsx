@@ -158,11 +158,13 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
                 </td>
                 <td>
                   {d.status === 'flagged' ? (
-                    <span className="report-chip red">{t('enc.level.high')} / {t('own.anomaly')}</span>
+                    <span className="report-chip red">{lang === 'bn' ? 'দায়বদ্ধ / এনক্রোচমেন্ট' : 'Encumbered / Encroachment'}</span>
                   ) : d.status === 'under_review' ? (
-                    <span className="report-chip amber">{t('common.status.under_review')} / {t('common.status.in_progress')}</span>
+                    <span className="report-chip amber">{lang === 'bn' ? 'যাচায়াধীন / তদন্ত চলছে' : 'Under Review'}</span>
+                  ) : i === 1 ? (
+                    <span className="report-chip green">{lang === 'bn' ? 'বৈধ / হস্তান্তরিত' : 'Valid / Transferred'}</span>
                   ) : (
-                    <span className="report-chip green">{t('common.status.approved')} / {t('common.status.cleared')}</span>
+                    <span className="report-chip green">{lang === 'bn' ? 'বৈধ / অনুমোদিত' : 'Valid / Approved'}</span>
                   )}
                 </td>
               </tr>
@@ -173,6 +175,48 @@ export const ReportPDF: React.FC<Props> = ({ plot, onSelectPlot }) => {
             )}
           </tbody>
         </table>
+
+        {/* Government Khas Land Warning if khas */}
+        {plot.ownershipType === 'khas' && (
+          <div style={{
+            background: '#fffbeb',
+            border: '2px solid #d97706',
+            borderRadius: 6,
+            padding: '10px 14px',
+            margin: '10px 0',
+            fontSize: '9.5pt',
+          }}>
+            <div style={{ color: '#92400e', fontWeight: 800, marginBottom: 2 }}>
+              🏛️ {lang === 'bn' ? 'সরকারি খাস জমি সতর্কবার্তা — শ্রেণি:' : 'Government Khas Land Notice — Class:'} {plot.khasClassification || 'agricultural'}
+            </div>
+            <div style={{ color: '#b45309', fontSize: '9pt' }}>
+              {lang === 'bn'
+                ? 'এই জমি গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের খাস খতিয়ানভুক্ত। কোনো প্রকার বেআইনি দখল, বালু ভরাট বা জাল দলিল সৃষ্টি রাষ্ট্রীয় দণ্ডবিধিতে শাস্তিযোগ্য অপরাধ।'
+                : 'This plot is recorded as state khas land. Unauthorized occupancy or boundary alternation is strictly prohibited.'}
+            </div>
+          </div>
+        )}
+
+        {/* River Erosion / Shikosti Notice if eroded */}
+        {isShikosti && (
+          <div style={{
+            background: '#f0f9ff',
+            border: '2px solid #0284c7',
+            borderRadius: 6,
+            padding: '10px 14px',
+            margin: '10px 0',
+            fontSize: '9.5pt',
+          }}>
+            <div style={{ color: '#0369a1', fontWeight: 800, marginBottom: 2 }}>
+              🌊 {lang === 'bn' ? 'নদী ভাঙন (শিকস্তি) জমি — সিকস্তি-পয়স্তি আইন ১৯৫০' : 'River Erosion (Shikosti) Notice — Act 1950'}
+            </div>
+            <div style={{ color: '#0284c7', fontSize: '9pt' }}>
+              {lang === 'bn'
+                ? `উপগ্রহ রাডার বিশ্লেষণে এই দাগের ${plot.erosion}% ভূমি নদীগর্ভে বিলীন চিহ্নিত। ৩০ বছরের মধ্যে পয়স্তি (পুনরায় জেগে উঠলে) মূল মালিক বা ওয়ারিশগণ অগ্রাধিকার ভিত্তিতে স্বত্ব দাবি করিতে পারিবেন।`
+                : `Satellite radar records ${plot.erosion}% erosion into riverbed. Original titleholders retain preferential claims if char accretes within 30 years.`}
+            </div>
+          </div>
+        )}
 
         {/* Litigation Lock Notice if locked */}
         {(() => {

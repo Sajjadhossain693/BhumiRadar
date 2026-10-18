@@ -614,4 +614,36 @@ export const en: Dict = {
   'common.serialNo': 'SL',
   'common.findings': 'Findings',
   'common.observations': 'Observations',
+
+  // ===== Cadastral & Map =====
+  'cadastral.searchTitle': 'Cadastral Mouza Search',
+  'cadastral.sheetNo': 'Sheet No.',
+  'cadastral.dagNo': 'Dag / Plot No.',
+  'cadastral.landUseSummary': 'Land Use Summary',
+  'cadastral.zoningSummary': 'Land Zoning Summary',
+  'cadastral.landUseTitle': 'Mouza Land Classification Statistics',
+  'cadastral.zoningTitle': 'Environmental & Land Zoning Guidelines',
+  'map.legend.encroachedDisputed': 'Encroached / Disputed Land (RED)',
+  'map.legend.riverErosion': 'River Erosion / Shikosti Land (Separate Color)',
+
+  // ===== Reports =====
+  'rep.tab.fullLand': 'Full Land Certificate',
+  'rep.tab.ownershipChain': 'Ownership Chain Report',
+  'rep.chainTitle': 'Ownership Chain & Khatian Heritage Report',
+  'rep.csKhatian': 'CS Khatian (1940)',
+  'rep.saKhatian': 'SA Khatian (1962)',
+  'rep.rsKhatian': 'RS Khatian (1988)',
+  'rep.bsKhatian': 'BS / City Survey Khatian (Present)',
+  'rep.deedChainVerification': 'Deed & Title Transfer Chain Verification',
+  'rep.riskAnalysis': 'Fraud, Encroachment & Dispute Risk Analysis',
+  'rep.parentDeed': 'Parent Deed',
+  'rep.viaDeed': 'Via Deed',
+  'rep.mutationDcr': 'Mutation & DCR',
+  'rep.taxDakhila': 'Land Development Tax (Dakhila)',
+  'rep.sealTitle': 'Assistant Land Officer Digital Seal',
+
+  // ===== Litigation =====
+  'lit.fullLandViewTitle': 'Full Land View for Selected Case',
+  'lit.caseDetails': 'Litigation & Injunction Details',
+  'lit.subRegLockNotice': 'Registration Lock Active at Sub-Registrar Office',
 };

@@ -614,5 +614,37 @@ export const bn: Dict = {
   'common.serialNo': 'ক্র.',
   'common.findings': 'প্রাপ্ত ফলাফল',
   'common.observations': 'পর্যবেক্ষণ',
+
+  // ===== Cadastral & Map =====
+  'cadastral.searchTitle': 'মৌজা নকশা অনুসন্ধান',
+  'cadastral.sheetNo': 'শিট নং',
+  'cadastral.dagNo': 'দাগ নং',
+  'cadastral.landUseSummary': 'ভূমি ব্যবহারের সারাংশ',
+  'cadastral.zoningSummary': 'ভূমি জোনিং সারাংশ',
+  'cadastral.landUseTitle': 'মৌজার ভূমি ব্যবহারের সামগ্রিক পরিসংখ্যান',
+  'cadastral.zoningTitle': 'পরিবেশগত ও ভূমি জোনিং নীতিমালা',
+  'map.legend.encroachedDisputed': 'দখলকৃত / বিরোধপূর্ণ জমি (লাল)',
+  'map.legend.riverErosion': 'নদী ভাঙন / শিকস্তি জমি (আলাদা রঙ)',
+
+  // ===== Reports =====
+  'rep.tab.fullLand': 'জমির পূর্ণাঙ্গ প্রতিবেদন',
+  'rep.tab.ownershipChain': 'স্বত্বের ধারাবাহিকতা রিপোর্ট',
+  'rep.chainTitle': 'স্বত্বের ধারাবাহিকতা ও খতিয়ান চেইন রিপোর্ট',
+  'rep.csKhatian': 'সিএস খতিয়ান (CS - ১৯৪০)',
+  'rep.saKhatian': 'এসএ খতিয়ান (SA - ১৯৬২)',
+  'rep.rsKhatian': 'আরএস খতিয়ান (RS - ১৯৮৮)',
+  'rep.bsKhatian': 'বিএস / সিটি জরিপ খতিয়ান (BS - বর্তমান)',
+  'rep.deedChainVerification': 'দলিল ও স্বত্ব হস্তান্তর ধারাবাহিকতা',
+  'rep.riskAnalysis': 'জালিয়াতি, দখল ও আইনি বিরোধ ঝুঁকি বিশ্লেষণ',
+  'rep.parentDeed': 'পিট দলিল',
+  'rep.viaDeed': 'বায়া দলিল',
+  'rep.mutationDcr': 'নামজারি ও ডিসিআর',
+  'rep.taxDakhila': 'ভূমি উন্নয়ন কর (দাখিলা)',
+  'rep.sealTitle': 'ভূমি সহকারী কর্মকর্তা ডিজিটাল সিলমোহর',
+
+  // ===== Litigation =====
+  'lit.fullLandViewTitle': 'নির্বাচিত মামলার জমির পূর্ণাঙ্গ ভিউ',
+  'lit.caseDetails': 'মোকদ্দমা ও নিষেধাজ্ঞা বিবরণী',
+  'lit.subRegLockNotice': 'সাব-রেজিস্ট্রার কার্যালয়ে রেজিস্ট্রেশন লক কার্যকর',
 };
 
