@@ -17,6 +17,10 @@ const pageMeta: Record<PageKey, { titleKey: string; subKey: string }> = {
   health:           { titleKey: 'hlt.title',              subKey: 'hlt.subtitle' },
   fieldInspection:  { titleKey: 'fld.title',              subKey: 'fld.subtitle' },
   reports:          { titleKey: 'rep.title',              subKey: 'rep.subtitle' },
+  mouzaValuation:   { titleKey: 'val.title',              subKey: 'val.subtitle' },
+  auditLedger:      { titleKey: 'aud.title',              subKey: 'aud.subtitle' },
+  laCompensation:   { titleKey: 'lac.title',              subKey: 'lac.subtitle' },
+  poaSentinel:      { titleKey: 'poa.title',              subKey: 'poa.subtitle' },
 };
 
 export const Topbar: React.FC<{ page: PageKey; onNavigate: (p: PageKey) => void }> = ({ page }) => {

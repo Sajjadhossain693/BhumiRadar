@@ -8,6 +8,7 @@ import { useToast } from '../components/ui/Toaster';
 import { MapView } from '../components/ui/MapView';
 import type { PageKey } from '../App';
 import type { Plot, Deed } from '../data/types';
+import { recordAuditEvent } from '../services/auditLedger';
 
 interface OfficerAuditProps {
   onSelectPlot: (id: string | null) => void;
@@ -67,14 +68,31 @@ export const OfficerAudit: React.FC<OfficerAuditProps> = ({ onSelectPlot, onNavi
   const toggleLock = () => {
     const nextState = !isLocked;
     setLockedPlots(prev => ({ ...prev, [selectedPlot.id]: nextState }));
+
+    // Record administrative action in Cryptographic Audit Ledger
+    recordAuditEvent({
+      eventType: nextState ? 'PLOT_REGISTRATION_LOCKED' : 'PLOT_REGISTRATION_UNLOCKED',
+      resourceType: 'plot',
+      resourceId: selectedPlot.id,
+      actorId: 'OFFICER-ACL-01',
+      actorRole: 'AC_LAND',
+      actionSummaryBn: nextState
+        ? `সহকারী কমিশনার (ভূমি) কর্তৃক দাগ নং ${selectedPlot.dag} (${selectedPlot.mouzaBn}) এ রেজিস্ট্রেশন লক কার্যকর`
+        : `আদালতের আদেশ অনুযায়ী দাগ নং ${selectedPlot.dag} (${selectedPlot.mouzaBn}) এর রেজিস্ট্রেশন লক প্রত্যাহার`,
+      actionSummaryEn: nextState
+        ? `Imposed administrative registration lock on Dag ${selectedPlot.dag} (${selectedPlot.mouza})`
+        : `Revoked registration lock on Dag ${selectedPlot.dag} (${selectedPlot.mouza}) under court order`,
+      payload: { dag: selectedPlot.dag, mouza: selectedPlot.mouza, isLocked: nextState, officerRole: 'AC_LAND' },
+    });
+
     if (nextState) {
       show('warn', lang === 'bn' 
-        ? `দাগ নং ${selectedPlot.dag} এর ওপর সহকারী কমিশনার (ভূমি) এর অনলাইন সাব-রেজিস্ট্রি ও নামজারি লক সক্রিয় করা হয়েছে!`
-        : `Online registration & mutation lock imposed on Dag ${selectedPlot.dag}!`);
+        ? `দাগ নং ${selectedPlot.dag} এর ওপর সহকারী কমিশনার (ভূমি) এর অনলাইন সাব-রেজিস্ট্রি ও নামজারি লক সক্রিয় ও অডিট লেজারে রেকর্ড করা হয়েছে!`
+        : `Online registration & mutation lock imposed on Dag ${selectedPlot.dag} and recorded in audit ledger!`);
     } else {
       show('success', lang === 'bn'
-        ? `আদালতের আদেশ অনুযায়ী দাগ নং ${selectedPlot.dag} এর ওপর থেকে লক প্রত্যাহার করা হয়েছে।`
-        : `Lock revoked on Dag ${selectedPlot.dag} under court order.`);
+        ? `আদালতের আদেশ অনুযায়ী দাগ নং ${selectedPlot.dag} এর ওপর থেকে লক প্রত্যাহার ও অডিট লেজারে রেকর্ড করা হয়েছে।`
+        : `Lock revoked on Dag ${selectedPlot.dag} and recorded in audit ledger.`);
     }
   };
 

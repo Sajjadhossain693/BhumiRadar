@@ -7,6 +7,7 @@ import { encroachmentAlerts, plots } from '../data/seed';
 import { useToast } from '../components/ui/Toaster';
 import { Modal } from '../components/ui/Modal';
 import type { EncroachmentAlert } from '../data/types';
+import { CitizenReportPortal } from '../components/encroachment/CitizenReportPortal';
 
 export const Encroachment: React.FC<{ onSelectPlot: (id: string | null) => void }> = ({ onSelectPlot }) => {
   const { t, lang } = useI18n();
@@ -14,6 +15,7 @@ export const Encroachment: React.FC<{ onSelectPlot: (id: string | null) => void 
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [resolved, setResolved] = useState<Set<string>>(new Set());
   const [selectedAlert, setSelectedAlert] = useState<EncroachmentAlert | null>(null);
+  const [showCitizenPortal, setShowCitizenPortal] = useState<boolean>(true);
 
   const filtered = encroachmentAlerts.filter(a => {
     const inFilter = filter === 'all' || a.level === filter;
@@ -32,6 +34,12 @@ export const Encroachment: React.FC<{ onSelectPlot: (id: string | null) => void 
           <p className="muted" style={{ marginTop: -4 }}>{t('enc.subtitle')}</p>
         </div>
         <div className="page-head__actions">
+          <button
+            className={`btn ${showCitizenPortal ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setShowCitizenPortal(!showCitizenPortal)}
+          >
+            <I.camera size={16} /> {lang === 'bn' ? 'খাসজমি রক্ষা করুন (নাগরিক রিপোর্ট)' : 'Report Encroachment'}
+          </button>
           <button className="btn btn-outline"><I.satellite size={16} /> {t('enc.evidence.satellite')}</button>
           <button className="btn btn-outline"><I.bell size={16} /> {t('enc.iotSensor')}</button>
         </div>
@@ -169,6 +177,9 @@ export const Encroachment: React.FC<{ onSelectPlot: (id: string | null) => void 
           </table>
         </div>
       </div>
+
+      {/* Citizen Encroachment Reporting & Tracking Portal */}
+      {showCitizenPortal && <CitizenReportPortal />}
 
       {/* Encroachment Alert Detail Modal */}
       {selectedAlert && (() => {

@@ -16,6 +16,10 @@ import { OfficerAudit } from './pages/OfficerAudit';
 import { PlotHealth } from './pages/PlotHealth';
 import { FieldInspection } from './pages/FieldInspection';
 import { Reports } from './pages/Reports';
+import { MouzaValuation } from './pages/MouzaValuation';
+import { AuditLedger } from './pages/AuditLedger';
+import { LACompensation } from './pages/LACompensation';
+import { PoASentinel } from './pages/PoASentinel';
 
 export type PageKey =
   | 'dashboard'
@@ -30,7 +34,11 @@ export type PageKey =
   | 'officerAudit'
   | 'health'
   | 'fieldInspection'
-  | 'reports';
+  | 'reports'
+  | 'mouzaValuation'
+  | 'auditLedger'
+  | 'laCompensation'
+  | 'poaSentinel';
 
 export const App: React.FC = () => {
   const [page, setPage] = useState<PageKey>('dashboard');
@@ -44,6 +52,7 @@ export const App: React.FC = () => {
         'dashboard', 'temporalGis', 'shikostiPoyosti', 'litigation',
         'encroachment', 'ownershipChain', 'khas', 'lien',
         'citizen', 'officerAudit', 'health', 'fieldInspection', 'reports',
+        'mouzaValuation', 'auditLedger', 'laCompensation', 'poaSentinel',
       ];
       if (allowed.includes(h)) setPage(h);
     };
@@ -82,6 +91,10 @@ export const App: React.FC = () => {
             {page === 'health' && <PlotHealth plotId={selectedPlotId} onSelectPlot={onSelectPlot} />}
             {page === 'fieldInspection' && <FieldInspection onSelectPlot={onSelectPlot} />}
             {page === 'reports' && <Reports plotId={selectedPlotId} onSelectPlot={onSelectPlot} />}
+            {page === 'mouzaValuation' && <MouzaValuation />}
+            {page === 'auditLedger' && <AuditLedger />}
+            {page === 'laCompensation' && <LACompensation />}
+            {page === 'poaSentinel' && <PoASentinel />}
           </div>
         </main>
         <Toaster />

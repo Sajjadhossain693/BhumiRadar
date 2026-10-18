@@ -918,6 +918,163 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
       </div>
 
       {/* ============================================================== */}
+      {/* ADVANCED LAND GOVERNANCE MODULES (PROD-READY SUITE)             */}
+      {/* ============================================================== */}
+      <div className="card mb-16" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', border: '1px solid #cbd5e1' }}>
+        <div className="card__title" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <I.shield size={22} style={{ color: 'var(--primary-700)' }} />
+            <div>
+              <h3 style={{ margin: 0 }}>
+                {lang === 'bn' ? 'উন্নত ভূমি সুশাসন ও ডিজিটাল নিরাপত্তা ফ্রেমওয়ার্ক' : 'Advanced Land Governance & Transparency Modules'}
+              </h3>
+              <small className="muted">
+                {lang === 'bn' ? 'আইনসম্মত রাজস্ব স্বচ্ছতা, খাসজমি রক্ষা ও ক্রিপ্টোগ্রাফিক সুরক্ষা স্যুট' : 'Statutory revenue transparency, public asset defense & SHA-256 cryptographic audit'}
+              </small>
+            </div>
+          </div>
+          <span className="badge badge-purple">{lang === 'bn' ? 'নতুন সংযুক্ত ৫টি মডিউল' : '5 New Modules'}</span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 14 }}>
+          {/* Module 1 */}
+          <div
+            onClick={() => onNavigate('mouzaValuation')}
+            style={{
+              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              borderRadius: 10,
+              padding: 14,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div className="row justify-between mb-4">
+              <span className="badge badge-info" style={{ fontSize: '0.72rem' }}>মডিউল ০১</span>
+              <I.scale size={16} style={{ color: 'var(--primary-700)' }} />
+            </div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', marginBottom: 4 }}>
+              {lang === 'bn' ? 'স্মার্ট মৌজা রেট ইঞ্জিন' : 'Smart Mouza Valuation'}
+            </strong>
+            <p className="muted text-xs" style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {lang === 'bn' ? 'সরকারি সর্বনিম্ন মৌজা রেট যাচাই, রাজস্ব ফাঁকি সনাক্তকরণ ও দলিলের পূর্ণাঙ্গ ফি প্রাক্কলন।' : 'Statutory minimum rate validation & fee estimation.'}
+            </p>
+            <span className="text-xs" style={{ color: 'var(--primary-700)', fontWeight: 600 }}>
+              {lang === 'bn' ? 'ক্যালকুলেটর খুলুন →' : 'Launch Engine →'}
+            </span>
+          </div>
+
+          {/* Module 2 */}
+          <div
+            onClick={() => onNavigate('encroachment')}
+            style={{
+              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              borderRadius: 10,
+              padding: 14,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div className="row justify-between mb-4">
+              <span className="badge badge-danger" style={{ fontSize: '0.72rem' }}>মডিউল ০২</span>
+              <I.camera size={16} style={{ color: 'var(--danger-600)' }} />
+            </div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', marginBottom: 4 }}>
+              {lang === 'bn' ? 'খাসজমি রক্ষা ও রিপোর্ট' : 'Encroachment Alert'}
+            </strong>
+            <p className="muted text-xs" style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {lang === 'bn' ? 'নাগরিকদের জিপিএস ও ছবি সহ বেনামী অভিযোগ দাখিল এবং সরকারি সীমানা স্থানিক যাচাই।' : 'Crowdsourced reporting & spatial screening.'}
+            </p>
+            <span className="text-xs" style={{ color: 'var(--danger-700)', fontWeight: 600 }}>
+              {lang === 'bn' ? 'নাগরিক পোর্টাল →' : 'Citizen Portal →'}
+            </span>
+          </div>
+
+          {/* Module 3 */}
+          <div
+            onClick={() => onNavigate('auditLedger')}
+            style={{
+              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              borderRadius: 10,
+              padding: 14,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div className="row justify-between mb-4">
+              <span className="badge badge-success" style={{ fontSize: '0.72rem' }}>মডিউল ০৩</span>
+              <I.fingerprint size={16} style={{ color: 'var(--success-700)' }} />
+            </div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', marginBottom: 4 }}>
+              {lang === 'bn' ? 'ক্রিপ্টোগ্রাফিক অডিট লেজার' : 'Cryptographic Ledger'}
+            </strong>
+            <p className="muted text-xs" style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {lang === 'bn' ? 'কর্মকর্তাদের সকল সিদ্ধান্তের অপরিবর্তনীয় SHA-256 হ্যাশ-চেইন ও লাইভ টেম্পার ডিটেকশন।' : 'Tamper-evident SHA-256 action chain.'}
+            </p>
+            <span className="text-xs" style={{ color: 'var(--success-700)', fontWeight: 600 }}>
+              {lang === 'bn' ? 'ব্লক চেইন এক্সপ্লোরার →' : 'Block Explorer →'}
+            </span>
+          </div>
+
+          {/* Module 4 */}
+          <div
+            onClick={() => onNavigate('laCompensation')}
+            style={{
+              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              borderRadius: 10,
+              padding: 14,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div className="row justify-between mb-4">
+              <span className="badge badge-purple" style={{ fontSize: '0.72rem' }}>মডিউল ০৪</span>
+              <I.trendUp size={16} style={{ color: '#7c3aed' }} />
+            </div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', marginBottom: 4 }}>
+              {lang === 'bn' ? 'অধিগ্রহণ ক্ষতিপূরণ (LA)' : 'LA Compensation'}
+            </strong>
+            <p className="muted text-xs" style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {lang === 'bn' ? 'আইন ২০১৭ অনুযায়ী ২০০%/৩০০% সংবিধিবদ্ধ গুণক ও সরাসরি ব্যাংক EFT বিতরণ।' : '2017 Act statutory 200%/300% & G2P EFT.'}
+            </p>
+            <span className="text-xs" style={{ color: '#7c3aed', fontWeight: 600 }}>
+              {lang === 'bn' ? 'রোয়েদাদ হিসাব →' : 'Award Calculator →'}
+            </span>
+          </div>
+
+          {/* Module 5 */}
+          <div
+            onClick={() => onNavigate('poaSentinel')}
+            style={{
+              background: '#ffffff',
+              border: '1px solid var(--border-color)',
+              borderRadius: 10,
+              padding: 14,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <div className="row justify-between mb-4">
+              <span className="badge badge-warn" style={{ fontSize: '0.72rem' }}>মডিউল ০৫</span>
+              <I.lock size={16} style={{ color: 'var(--warn-700)' }} />
+            </div>
+            <strong style={{ fontSize: '0.92rem', display: 'block', marginBottom: 4 }}>
+              {lang === 'bn' ? 'আমমোক্তারনামা সেন্টিনেল' : 'PoA Sentinel'}
+            </strong>
+            <p className="muted text-xs" style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
+              {lang === 'bn' ? 'আমমোক্তারনামা আইন ২০১২ রেজিস্ট্রি, লেনদেন বৈধতা গেট ও তাৎক্ষণিক প্রত্যাহার।' : 'The Power of Attorney Act 2012 gate.'}
+            </p>
+            <span className="text-xs" style={{ color: 'var(--warn-700)', fontWeight: 600 }}>
+              {lang === 'bn' ? 'রেজিস্ট্রি ও গেট →' : 'Registry & Gate →'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
       {/* MODAL 1: CASCADING QUICK SEARCH MODAL (Image & HTML Feature)   */}
       {/* ============================================================== */}
       {showQuickSearch && (

@@ -36,6 +36,10 @@ export const en: Dict = {
   'nav.lien': 'Bank Lien',
   'nav.citizen': 'Citizen Land Search',
   'nav.officerAudit': 'Officer Investigation & Audit',
+  'nav.mouzaValuation': 'Smart Mouza Valuation',
+  'nav.laCompensation': 'LA Direct Compensation',
+  'nav.poaSentinel': 'PoA Revocation Sentinel',
+  'nav.auditLedger': 'Cryptographic Audit Ledger',
   'nav.health': 'Plot Health Score',
   'nav.fieldInspection': 'Field Inspection',
   'nav.reports': 'Reports & Certificates',
@@ -681,4 +685,20 @@ export const en: Dict = {
   'lit.fullLandViewTitle': 'Full Land View for Selected Case',
   'lit.caseDetails': 'Litigation & Injunction Details',
   'lit.subRegLockNotice': 'Registration Lock Active at Sub-Registrar Office',
+
+  // ===== Module 1: Smart Mouza Valuation =====
+  'val.title': 'Smart Mouza Valuation & Revenue Engine',
+  'val.subtitle': 'Statutory minimum mouza rate verification, undervaluation detection and registration fee estimation',
+
+  // ===== Module 3: Cryptographic Audit Ledger =====
+  'aud.title': 'Cryptographic Civil Servant Action Ledger',
+  'aud.subtitle': 'Tamper-evident SHA-256 hash-chained audit trail recording administrative decisions and mutations',
+
+  // ===== Module 4: LA Direct Compensation Calculator =====
+  'lac.title': 'LA Direct Compensation Calculator',
+  'lac.subtitle': 'Acquisition & Requisition of Immovable Property Act 2017: Section 9(3) statutory 200%/300% multipliers & G2P EFT',
+
+  // ===== Module 5: Power of Attorney Sentinel =====
+  'poa.title': 'Power of Attorney Revocation Sentinel (Act 2012)',
+  'poa.subtitle': 'Digital PoA registry, transaction validity gating and revocation security under The Power of Attorney Act 2012',
 };
