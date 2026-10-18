@@ -4,6 +4,7 @@ import { useI18n } from '../../i18n/provider';
 import { BilingualName } from '../ui/StatusBadge';
 import { I } from '../ui/Icons';
 import { deeds, plots, litigation, fraudAlerts, liens } from '../../data/seed';
+import { getSectorZoning } from '../../data/zoning';
 import type { Plot } from '../../data/types';
 import { useToast } from '../ui/Toaster';
 
@@ -118,6 +119,35 @@ export const OwnershipChainReport: React.FC<Props> = ({ plot, onSelectPlot }) =>
           <div><strong>{lang === 'bn' ? 'রেকর্ডীয় বর্তমান মালিক' : 'Present Recorded Owner'}:</strong> <BilingualName en={plot.owner.name} bn={plot.owner.nameBn} /> (পিতা: {plot.owner.fatherName || 'মোহাম্মদ ওসমান'})</div>
           <div><strong>{t('common.date')}:</strong> <span className="mono">{dateStr} {timeStr}</span></div>
         </div>
+
+        {/* Land Zoning Sector Classification */}
+        {(() => {
+          const plotZoning = getSectorZoning(undefined, plot.district, plot.upazila, plot.mouza);
+          return (
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: 6,
+              padding: '6px 10px',
+              fontSize: '8.5pt',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              margin: '6px 0 10px 0',
+            }}>
+              <div>
+                <strong>{lang === 'bn' ? 'ভূমি জোনিং শ্রেণি' : 'Land Zoning Category'}:</strong>{' '}
+                <span style={{ color: '#047857', fontWeight: 700 }}>
+                  🧭 {lang === 'bn' ? plotZoning.zoningCategoryBn : plotZoning.zoningCategoryEn}
+                </span>
+              </div>
+              <div>
+                <strong>{lang === 'bn' ? 'মাস্টারপ্ল্যান কোড' : 'Masterplan Code'}:</strong>{' '}
+                <span className="mono" style={{ fontWeight: 700 }}>{plotZoning.masterplanCode}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* SECTION 1: Khatian Evolution (CS -> SA -> RS -> BS) */}
         <h3 className="report-section-title" style={{ marginTop: 14 }}>

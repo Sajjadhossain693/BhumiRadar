@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/provider';
 import { I } from '../components/ui/Icons';
 import { BilingualName, StatusBadge } from '../components/ui/StatusBadge';
 import { districts, upazilasByDistrict, mouzasByUpazila, plots, litigation } from '../data/seed';
+import { getSectorZoning } from '../data/zoning';
 import { useToast } from '../components/ui/Toaster';
 import { MapView } from '../components/ui/MapView';
 
@@ -102,7 +103,12 @@ export const CitizenVerification: React.FC<{ onSelectPlot: (id: string | null) =
                   </div>
                   <div className="row between mt-8">
                     <span className="text-sm"><BilingualName en={p.owner.name} bn={p.owner.nameBn} /></span>
-                    <span className="chip brand">{p.areaShotok} {t('units.shotok')}</span>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', fontSize: '0.68rem', fontWeight: 600 }}>
+                        🧭 {lang === 'bn' ? getSectorZoning(undefined, p.district, p.upazila, p.mouza).zoneTagBn : getSectorZoning(undefined, p.district, p.upazila, p.mouza).zoneTagEn}
+                      </span>
+                      <span className="chip brand">{p.areaShotok} {t('units.shotok')}</span>
+                    </div>
                   </div>
                   {(() => {
                     const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(p.id)) || (p.status === 'locked' ? litigation[0] : null);

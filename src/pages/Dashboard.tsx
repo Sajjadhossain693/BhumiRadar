@@ -6,6 +6,13 @@ import { computeStats, encroachmentAlerts, fraudAlerts, inspections, litigation,
 import type { PageKey } from '../App';
 import { MapView } from '../components/ui/MapView';
 import { Modal } from '../components/ui/Modal';
+import {
+  divisions,
+  districtsByDivision,
+  upazilasByDistrict,
+  mouzasByUpazila,
+  getSectorZoning,
+} from '../data/zoning';
 
 type DesignVariation = 1 | 2 | 3 | 4 | 5;
 type KpiCard = { key: string; labelKey: string; value: number | string; delta: number; kind: 'green' | 'red' | 'amber' | 'info' | 'gold' | 'brand' };
@@ -26,6 +33,44 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
   const [selUpazila, setSelUpazila] = useState('chandpur-sadar');
   const [selMouza, setSelMouza] = useState('chirarchar');
   const [plotInput, setPlotInput] = useState('888881');
+
+  const availableQuickDists = useMemo(() => districtsByDivision[selDiv] || [], [selDiv]);
+  const availableQuickUpazilas = useMemo(() => upazilasByDistrict[selDist] || [], [selDist]);
+  const availableQuickMouzas = useMemo(() => mouzasByUpazila[selUpazila] || [], [selUpazila]);
+
+  const quickZoning = useMemo(() => {
+    return getSectorZoning(selDiv, selDist, selUpazila, selMouza);
+  }, [selDiv, selDist, selUpazila, selMouza]);
+
+  const handleQuickDivChange = (divId: string) => {
+    setSelDiv(divId);
+    const dists = districtsByDivision[divId] || [];
+    const firstDist = dists[0]?.id || '';
+    setSelDist(firstDist);
+    const upazilas = upazilasByDistrict[firstDist] || [];
+    const firstUp = upazilas[0]?.id || '';
+    setSelUpazila(firstUp);
+    const mouzas = mouzasByUpazila[firstUp] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelMouza(firstMou);
+  };
+
+  const handleQuickDistChange = (distId: string) => {
+    setSelDist(distId);
+    const upazilas = upazilasByDistrict[distId] || [];
+    const firstUp = upazilas[0]?.id || '';
+    setSelUpazila(firstUp);
+    const mouzas = mouzasByUpazila[firstUp] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelMouza(firstMou);
+  };
+
+  const handleQuickUpazilaChange = (upId: string) => {
+    setSelUpazila(upId);
+    const mouzas = mouzasByUpazila[upId] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelMouza(firstMou);
+  };
 
   const kpis: KpiCard[] = [
     { key: 'plots',  labelKey: 'kpi.totalPlots',       value: stats.totalPlots,        delta: 4,   kind: 'green' },
@@ -874,34 +919,46 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
             <div className="grid grid-2" style={{ gap: 10, fontSize: '0.8rem' }}>
               <div>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>বিভাগ (Division)</label>
-                <select value={selDiv} onChange={e => setSelDiv(e.target.value)} className="select" style={{ width: '100%' }}>
-                  <option value="chattogram">চট্টগ্রাম (Chattogram)</option>
-                  <option value="dhaka">ঢাকা (Dhaka)</option>
-                  <option value="rajshahi">রাজশাহী (Rajshahi)</option>
+                <select value={selDiv} onChange={e => handleQuickDivChange(e.target.value)} className="select" style={{ width: '100%' }}>
+                  {divisions.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>জেলা (District)</label>
-                <select value={selDist} onChange={e => setSelDist(e.target.value)} className="select" style={{ width: '100%' }}>
-                  <option value="chandpur">চাঁদপুর (Chandpur)</option>
-                  <option value="cumilla">কুমিল্লা (Cumilla)</option>
-                  <option value="dhaka">ঢাকা (Dhaka)</option>
+                <select value={selDist} onChange={e => handleQuickDistChange(e.target.value)} className="select" style={{ width: '100%' }}>
+                  {availableQuickDists.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>উপজেলা (Upazila)</label>
-                <select value={selUpazila} onChange={e => setSelUpazila(e.target.value)} className="select" style={{ width: '100%' }}>
-                  <option value="chandpur-sadar">চাঁদপুর সদর (Chandpur Sadar)</option>
-                  <option value="haimchar">হাইমচর (Haimchar)</option>
-                  <option value="savar">সাভার (Savar)</option>
+                <select value={selUpazila} onChange={e => handleQuickUpazilaChange(e.target.value)} className="select" style={{ width: '100%' }}>
+                  {availableQuickUpazilas.map(u => (
+                    <option key={u.id} value={u.id}>{lang === 'bn' ? u.bn : u.en}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>মৌজা ও জে.এল (Mouza)</label>
                 <select value={selMouza} onChange={e => setSelMouza(e.target.value)} className="select" style={{ width: '100%' }}>
-                  <option value="chirarchar">চিরারচর (Chirarchar - JL 42)</option>
-                  <option value="hemayetpur">হেমায়েতপুর (Hemayetpur)</option>
+                  {availableQuickMouzas.map(m => (
+                    <option key={m.id} value={m.id}>{lang === 'bn' ? m.bn : m.en}</option>
+                  ))}
                 </select>
+              </div>
+
+              {/* Dynamic Sector Zoning Summary Card */}
+              <div style={{ gridColumn: 'span 2', padding: '8px 12px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, fontSize: '0.8rem' }}>
+                <div style={{ color: '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>🧭</span>
+                  <span>{lang === 'bn' ? 'ভূমি জোনিং শ্রেণি' : 'Land Zoning Category'}: <strong>{lang === 'bn' ? quickZoning.zoningCategoryBn : quickZoning.zoningCategoryEn}</strong></span>
+                </div>
+                <div style={{ color: '#15803d', fontSize: '0.74rem', marginTop: 3, lineHeight: 1.4 }}>
+                  {lang === 'bn' ? quickZoning.descriptionBn : quickZoning.descriptionEn}
+                </div>
               </div>
               <div style={{ gridColumn: 'span 2' }}>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>দাগ / প্লট নম্বর (Plot Number)</label>
@@ -963,12 +1020,14 @@ export const Dashboard: React.FC<{ onNavigate: (p: PageKey) => void; onSelectPlo
                 <div><b>মৌজা ও জে.এল:</b> মৌজা চিরারচর (জে.এল নং ৪২)</div>
                 <div><b>উপজেলা ও জেলা:</b> চাঁদপুর সদর, চাঁদপুর</div>
                 <div><b>রেকর্ডীয় মালিক:</b> মোঃ রফিকুল হাসান</div>
+                <div><b>ভূমি জোনিং শ্রেণি:</b> <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', fontSize: '0.72rem', fontWeight: 600 }}>🧭 মেঘনা মোহনা ও নদীভাঙন সক্রিয় অঞ্চল</span></div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div><b>দাগ নম্বর:</b> <span style={{ color: '#dc2626', fontWeight: 800 }}>৮৮৮৮৮১</span></div>
                 <div><b>রেকর্ডীয় জমি:</b> ১০০.০০ শতক (বর্তমান শুষ্ক: ৩৫.৮০ শতক)</div>
                 <div><b>শিকস্তি ভাঙন:</b> ৬৪.২০ শতক (নদীগর্ভে বিলীন)</div>
                 <div><b>সাব-রেজিস্ট্রি স্ট্যাটাস:</b> <span style={{ color: '#dc2626', fontWeight: 800 }}>🔒 লকড / হস্তান্তর নিষিদ্ধ</span></div>
+                <div><b>মাস্টারপ্ল্যান কোড:</b> <span className="mono" style={{ background: '#f1f5f9', padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>BWDB-MEGHNA-2024-CP-42</span></div>
               </div>
             </div>
 

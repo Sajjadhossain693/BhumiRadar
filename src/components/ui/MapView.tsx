@@ -5,6 +5,14 @@ import type { Plot, UnusualActivity } from '../../data/types';
 import { BilingualName } from './StatusBadge';
 import { litigation, liens } from '../../data/seed';
 import { Modal } from './Modal';
+import {
+  divisions,
+  districtsByDivision,
+  upazilasByDistrict,
+  mouzasByUpazila,
+  getSectorZoning,
+  type SectorZoningData,
+} from '../../data/zoning';
 
 type Layer = 'cadastral' | 'osm' | 'satellite' | 'erosion';
 type OwnershipFilter = 'all' | 'khas' | 'malikana' | 'locked' | 'unusual';
@@ -47,12 +55,12 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [liveTimestamp, setLiveTimestamp] = useState<string>('10:45:12');
 
-  // Floating Cadastral Search Widget (Image 1) states
+  // Floating Cadastral Search Widget states
   const [cadastralCollapsed, setCadastralCollapsed] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState('dhaka');
   const [selectedDistrict, setSelectedDistrict] = useState('dhaka');
-  const [selectedUpazila, setSelectedUpazila] = useState('savar');
-  const [selectedMouza, setSelectedMouza] = useState('Hemayetpur');
+  const [selectedUpazila, setSelectedUpazila] = useState('keraniganj');
+  const [selectedMouza, setSelectedMouza] = useState('kalatia');
   const [selectedSheet, setSelectedSheet] = useState('১');
   const [showLandUseModal, setShowLandUseModal] = useState(false);
   const [showZoningModal, setShowZoningModal] = useState(false);
@@ -125,6 +133,65 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
       map.invalidateSize();
     }
   };
+
+  // Cascading geographic lists
+  const availableDistricts = useMemo(() => districtsByDivision[selectedDivision] || [], [selectedDivision]);
+  const availableUpazilas = useMemo(() => upazilasByDistrict[selectedDistrict] || [], [selectedDistrict]);
+  const availableMouzas = useMemo(() => mouzasByUpazila[selectedUpazila] || [], [selectedUpazila]);
+
+  // Dynamic Land Zoning and Land Use data for currently selected sector
+  const currentZoning: SectorZoningData = useMemo(() => {
+    return getSectorZoning(selectedDivision, selectedDistrict, selectedUpazila, selectedMouza);
+  }, [selectedDivision, selectedDistrict, selectedUpazila, selectedMouza]);
+
+  const handleDivisionChange = (divId: string) => {
+    setSelectedDivision(divId);
+    const dists = districtsByDivision[divId] || [];
+    const firstDist = dists[0]?.id || '';
+    setSelectedDistrict(firstDist);
+    const upazilas = upazilasByDistrict[firstDist] || [];
+    const firstUp = upazilas[0]?.id || '';
+    setSelectedUpazila(firstUp);
+    const mouzas = mouzasByUpazila[firstUp] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelectedMouza(firstMou);
+  };
+
+  const handleDistrictChange = (distId: string) => {
+    setSelectedDistrict(distId);
+    const upazilas = upazilasByDistrict[distId] || [];
+    const firstUp = upazilas[0]?.id || '';
+    setSelectedUpazila(firstUp);
+    const mouzas = mouzasByUpazila[firstUp] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelectedMouza(firstMou);
+  };
+
+  const handleUpazilaChange = (upId: string) => {
+    setSelectedUpazila(upId);
+    const mouzas = mouzasByUpazila[upId] || [];
+    const firstMou = mouzas[0]?.id || '';
+    setSelectedMouza(firstMou);
+  };
+
+  const handleMouzaChange = (mouId: string) => {
+    setSelectedMouza(mouId);
+    const norm = (s: string) => s.toLowerCase().replace(/[\s\-_]/g, '');
+    const mNorm = norm(mouId);
+    const matchingPlot = plots.find(p => norm(p.mouza).includes(mNorm) || mNorm.includes(norm(p.mouza)));
+    if (matchingPlot) {
+      focusPlot(matchingPlot.id);
+    }
+  };
+
+  // Filter or prioritize plots in the current sector
+  const sectorPlots = useMemo(() => {
+    const norm = (s: string) => s.toLowerCase().replace(/[\s\-_]/g, '');
+    const mNorm = norm(selectedMouza);
+    const uNorm = norm(selectedUpazila);
+    const matched = plots.filter(p => norm(p.mouza).includes(mNorm) || mNorm.includes(norm(p.mouza)) || norm(p.upazila).includes(uNorm));
+    return matched.length > 0 ? matched : plots;
+  }, [plots, selectedMouza, selectedUpazila]);
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -690,34 +757,34 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
             <div className="cadastral-search-body">
               <div className="cadastral-field">
                 <label>{t('common.division')}</label>
-                <select value={selectedDivision} onChange={e => setSelectedDivision(e.target.value)}>
-                  <option value="dhaka">{lang === 'bn' ? 'ঢাকা' : 'Dhaka'}</option>
-                  <option value="sylhet">{lang === 'bn' ? 'সিলেট' : 'Sylhet'}</option>
-                  <option value="rajshahi">{lang === 'bn' ? 'রাজশাহী' : 'Rajshahi'}</option>
-                  <option value="khulna">{lang === 'bn' ? 'খুলনা' : 'Khulna'}</option>
+                <select value={selectedDivision} onChange={e => handleDivisionChange(e.target.value)}>
+                  {divisions.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
                 </select>
               </div>
               <div className="cadastral-field">
                 <label>{t('common.district')}</label>
-                <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
-                  <option value="dhaka">{lang === 'bn' ? 'ঢাকা' : 'Dhaka'}</option>
-                  <option value="savar">{lang === 'bn' ? 'সাভার' : 'Savar'}</option>
+                <select value={selectedDistrict} onChange={e => handleDistrictChange(e.target.value)}>
+                  {availableDistricts.map(d => (
+                    <option key={d.id} value={d.id}>{lang === 'bn' ? d.bn : d.en}</option>
+                  ))}
                 </select>
               </div>
               <div className="cadastral-field">
                 <label>{t('common.thana')}</label>
-                <select value={selectedUpazila} onChange={e => setSelectedUpazila(e.target.value)}>
-                  <option value="savar">{lang === 'bn' ? 'সাভার' : 'Savar'}</option>
-                  <option value="dhamrai">{lang === 'bn' ? 'ধামরাই' : 'Dhamrai'}</option>
-                  <option value="keraniganj">{lang === 'bn' ? 'কেরাণীগঞ্জ' : 'Keraniganj'}</option>
+                <select value={selectedUpazila} onChange={e => handleUpazilaChange(e.target.value)}>
+                  {availableUpazilas.map(u => (
+                    <option key={u.id} value={u.id}>{lang === 'bn' ? u.bn : u.en}</option>
+                  ))}
                 </select>
               </div>
               <div className="cadastral-field">
                 <label>{t('common.mouza')}</label>
-                <select value={selectedMouza} onChange={e => setSelectedMouza(e.target.value)}>
-                  <option value="Hemayetpur">{lang === 'bn' ? 'হেমায়েতপুর' : 'Hemayetpur'}</option>
-                  <option value="Balia">{lang === 'bn' ? 'বালিয়া' : 'Balia'}</option>
-                  <option value="Kalatia">{lang === 'bn' ? 'কলাতিয়া' : 'Kalatia'}</option>
+                <select value={selectedMouza} onChange={e => handleMouzaChange(e.target.value)}>
+                  {availableMouzas.map(m => (
+                    <option key={m.id} value={m.id}>{lang === 'bn' ? m.bn : m.en}</option>
+                  ))}
                 </select>
               </div>
               <div className="cadastral-field">
@@ -733,13 +800,35 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
                   }}
                 >
                   <option value="">-- {lang === 'bn' ? 'দাগ নির্বাচন করুন' : 'Select Dag'} --</option>
-                  {plots.map(p => (
+                  {sectorPlots.map(p => (
                     <option key={p.id} value={p.id}>
                       {lang === 'bn' ? 'দাগ' : 'Dag'} {p.dag} ({p.id}) - {p.ownershipType === 'khas' ? (lang === 'bn' ? '🏛️ খাস' : 'Khas') : p.status === 'encroached' ? (lang === 'bn' ? '🚨 বেদখল' : 'Encroached') : p.status === 'shikosti' ? (lang === 'bn' ? '🌊 শিকস্তি' : 'Shikosti') : (lang === 'bn' ? '👤 মালিকানা' : 'Private')}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* Dynamic Sector Zoning Status Pill */}
+              <div style={{
+                padding: '6px 8px',
+                background: '#f0fdf4',
+                border: '1px solid #86efac',
+                borderRadius: 6,
+                fontSize: '0.74rem',
+                lineHeight: 1.3,
+              }}>
+                <div style={{ color: '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span>🧭</span>
+                  <span>{lang === 'bn' ? 'ভূমি জোনিং জোন' : 'Zoning Zone'}:</span>
+                </div>
+                <div style={{ color: '#14532d', fontWeight: 600, marginTop: 2 }}>
+                  {lang === 'bn' ? currentZoning.zoneTagBn : currentZoning.zoneTagEn}
+                </div>
+                <div style={{ color: '#15803d', fontSize: '0.68rem', marginTop: 1 }}>
+                  {currentZoning.masterplanCode}
+                </div>
+              </div>
+
               <button className="btn-cadastral-use" onClick={() => setShowLandUseModal(true)}>
                 📊 {t('cadastral.landUseSummary')}
               </button>
@@ -873,6 +962,19 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
               </div>
             )}
 
+            {/* Land Zoning Category */}
+            {(() => {
+              const pZoning = getSectorZoning(undefined, selected.district, selected.upazila, selected.mouza);
+              return (
+                <div className="row" style={{ marginTop: 4 }}>
+                  <b>{lang === 'bn' ? 'ভূমি জোনিং শ্রেণি' : 'Land Zoning'}:</b>
+                  <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', fontSize: '0.72rem', fontWeight: 600 }}>
+                    🧭 {lang === 'bn' ? pZoning.zoneTagBn : pZoning.zoneTagEn}
+                  </span>
+                </div>
+              );
+            })()}
+
             {/* If Selected plot has active litigation lock */}
             {(() => {
               const activeLock = litigation.find(c => c.status === 'active' && c.plots.includes(selected.id)) || (selected.status === 'locked' ? litigation[0] : null);
@@ -973,7 +1075,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
         <Modal
           open={showLandUseModal}
           onClose={() => setShowLandUseModal(false)}
-          title={`📊 ${t('cadastral.landUseTitle')} — ${selectedMouza} (${t('cadastral.sheetNo')}: ${selectedSheet})`}
+          title={`📊 ${t('cadastral.landUseTitle')} — ${lang === 'bn' ? currentZoning.mouzaBn : currentZoning.mouzaEn} (${t('cadastral.sheetNo')}: ${selectedSheet})`}
           size="md"
           footer={
             <button className="btn btn-primary" onClick={() => setShowLandUseModal(false)}>
@@ -982,31 +1084,45 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
           }
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <p className="muted" style={{ fontSize: '0.85rem' }}>
+            <div style={{ padding: '8px 12px', background: '#eff6ff', borderRadius: 6, border: '1px solid #bfdbfe', fontSize: '0.82rem', color: '#1e40af' }}>
+              📍 <b>{lang === 'bn' ? 'সেক্টর অবস্থান' : 'Sector Location'}:</b>{' '}
               {lang === 'bn'
-                ? `উপগ্রহ চিত্র ও সর্বশেষ ক্যাডাস্ট্রাল জরিপ অনুযায়ী ${selectedMouza} মৌজার মোট ১২৪টি দাগের শ্রেণিভিত্তিক পরিসংখ্যান:`
-                : `Land classification metrics for ${selectedMouza} mouza based on latest cadastral survey and satellite imagery:`}
+                ? `${currentZoning.divisionBn} বিভাগ > ${currentZoning.districtBn} জেলা > ${currentZoning.upazilaBn} উপজেলা > ${currentZoning.mouzaBn} মৌজা`
+                : `${currentZoning.divisionEn} Division > ${currentZoning.districtEn} District > ${currentZoning.upazilaEn} > ${currentZoning.mouzaEn} Mouza`}
+            </div>
+            <p className="muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+              {lang === 'bn'
+                ? `উপগ্রহ চিত্র ও ক্যাডাস্ট্রাল জরিপ অনুযায়ী ${currentZoning.mouzaBn} মৌজার মোট ${currentZoning.landUse.totalPlots}টি দাগের শ্রেণিভিত্তিক পরিসংখ্যান:`
+                : `Land classification metrics for ${currentZoning.mouzaEn} mouza based on latest cadastral survey and satellite imagery (${currentZoning.landUse.totalPlots} total plots):`}
             </p>
             <div className="grid grid-2" style={{ gap: 10 }}>
               <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: 12, borderRadius: 8 }}>
                 <div style={{ fontSize: '0.8rem', color: '#166534', fontWeight: 600 }}>🌾 {lang === 'bn' ? 'কৃষি জমি' : 'Agricultural Land'}</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#14532d' }}>৬২.৪% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৭৮টি দাগ)</span></div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#14532d' }}>
+                  {currentZoning.landUse.agriculturalPct}% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>({currentZoning.landUse.agriculturalPlots}টি দাগ)</span>
+                </div>
               </div>
               <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
                 <div style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>🏡 {lang === 'bn' ? 'আবাসিক ও বসতবাড়ি' : 'Residential'}</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>২৫.৬% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৩২টি দাগ)</span></div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
+                  {currentZoning.landUse.residentialPct}% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>({currentZoning.landUse.residentialPlots}টি দাগ)</span>
+                </div>
               </div>
               <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: 12, borderRadius: 8 }}>
                 <div style={{ fontSize: '0.8rem', color: '#92400e', fontWeight: 600 }}>🏛️ {lang === 'bn' ? 'সরকারি খাস জমি / খাল' : 'Govt Khas / Canals'}</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#b45309' }}>৮.০% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(১০টি দাগ)</span></div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#b45309' }}>
+                  {currentZoning.landUse.khasCanalPct}% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>({currentZoning.landUse.khasCanalPlots}টি দাগ)</span>
+                </div>
               </div>
               <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: 12, borderRadius: 8 }}>
                 <div style={{ fontSize: '0.8rem', color: '#0369a1', fontWeight: 600 }}>🌊 {lang === 'bn' ? 'নদীগর্ভে বিলীন (শিকস্তি)' : 'River Erosion (Shikosti)'}</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0284c7' }}>৪.০% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>(৪টি দাগ)</span></div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0284c7' }}>
+                  {currentZoning.landUse.erosionWaterPct}% <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>({currentZoning.landUse.erosionWaterPlots}টি দাগ)</span>
+                </div>
               </div>
             </div>
-            <div style={{ background: '#f1f5f9', padding: 10, borderRadius: 6, fontSize: '0.8rem' }}>
-              <b>💡 {lang === 'bn' ? 'ক্যাডাস্ট্রাল নোট' : 'Cadastral Note'}:</b> {lang === 'bn' ? 'এই মৌজার সকল খাস জমি ও খাল ভূমি মন্ত্রণালয়ের ডিজিটাল রেকর্ড অনুযায়ী জিও-ফেন্সিং দ্বারা সুরক্ষিত।' : 'All khas lands in this mouza are monitored via digital geofencing.'}
+            <div style={{ background: '#f1f5f9', padding: 10, borderRadius: 6, fontSize: '0.8rem', lineHeight: 1.5 }}>
+              <b>💡 {lang === 'bn' ? 'ক্যাডাস্ট্রাল নোট' : 'Cadastral Note'}:</b> {lang === 'bn' ? currentZoning.cadastralNoteBn : currentZoning.cadastralNoteEn}
             </div>
           </div>
         </Modal>
@@ -1017,7 +1133,7 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
         <Modal
           open={showZoningModal}
           onClose={() => setShowZoningModal(false)}
-          title={`🧭 ${t('cadastral.zoningTitle')} — ${selectedMouza}`}
+          title={`🧭 ${t('cadastral.zoningTitle')} — ${lang === 'bn' ? currentZoning.mouzaBn : currentZoning.mouzaEn}`}
           size="md"
           footer={
             <button className="btn btn-primary" onClick={() => setShowZoningModal(false)}>
@@ -1027,19 +1143,52 @@ export const MapView: React.FC<Props> = ({ plots, selectedId, onSelect, showLege
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ borderLeft: '4px solid #d97706', background: '#fffbeb', padding: 12, borderRadius: 6 }}>
-              <h4 style={{ margin: '0 0 4px 0', color: '#b45309' }}>
-                {lang === 'bn' ? 'ভূমি জোনিং শ্রেণি: গ্রামীণ মিশ্র ও কৃষি অঞ্চল (Zone-Agri/Rural)' : 'Zoning Classification: Mixed Rural & Agriculture'}
+              <div style={{ fontSize: '0.74rem', color: '#92400e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 2 }}>
+                {lang === 'bn' ? 'ভূমি জোনিং শ্রেণি (Official Land Zoning Category)' : 'Official Land Zoning Category'}
+              </div>
+              <h4 style={{ margin: '0 0 6px 0', color: '#b45309', fontSize: '1.05rem' }}>
+                🧭 {lang === 'bn' ? currentZoning.zoningCategoryBn : currentZoning.zoningCategoryEn}
               </h4>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: '#78350f' }}>
-                {lang === 'bn'
-                  ? 'জাতীয় ভূমি জোনিং প্রবিধান ও মাস্টারপ্ল্যান অনুযায়ী এই মৌজায় কৃষি জমি অকৃষি কাজে রূপান্তরে পূর্বানুমতি বাধ্যতামূলক।'
-                  : 'Prior clearance required for converting agricultural parcels under National Land Zoning policy.'}
+              <p style={{ margin: 0, fontSize: '0.83rem', color: '#78350f', lineHeight: 1.5 }}>
+                {lang === 'bn' ? currentZoning.descriptionBn : currentZoning.descriptionEn}
               </p>
             </div>
-            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div><b>🛡️ {lang === 'bn' ? 'পরিবেশগত সংবেদনশীলতা' : 'Eco Sensitivity'}:</b> <span className="chip">{lang === 'bn' ? 'মাঝারি (জলাশয় ও খাল সংলগ্ন)' : 'Moderate'}</span></div>
-              <div><b>🌊 {lang === 'bn' ? 'প্লাবনভূমি সতর্কতা' : 'Floodplain Warning'}:</b> <span className="chip" style={{ background: '#fef2f2', color: '#b91c1c' }}>{lang === 'bn' ? 'বর্ষায় নিম্নভূমি এলাকা প্লাবিত হয়' : 'Seasonal Submergence'}</span></div>
-              <div><b>📜 {lang === 'bn' ? 'মাস্টারপ্ল্যান কোড' : 'Masterplan Code'}:</b> <span className="mono">RAJUK-DMDP-2024-SV-08</span></div>
+
+            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: 8, background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <div>
+                <b>🛡️ {lang === 'bn' ? 'পরিবেশগত সংবেদনশীলতা' : 'Eco Sensitivity'}:</b>{' '}
+                <span className="chip" style={{
+                  background: currentZoning.ecoSensitivityLevel === 'critical' ? '#fee2e2' : currentZoning.ecoSensitivityLevel === 'high' ? '#ffedd5' : '#e0f2fe',
+                  color: currentZoning.ecoSensitivityLevel === 'critical' ? '#b91c1c' : currentZoning.ecoSensitivityLevel === 'high' ? '#c2410c' : '#0369a1',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                }}>
+                  {lang === 'bn' ? currentZoning.ecoSensitivityBn : currentZoning.ecoSensitivityEn}
+                </span>
+              </div>
+              <div>
+                <b>🌊 {lang === 'bn' ? 'প্লাবনভূমি সতর্কতা' : 'Floodplain Warning'}:</b>{' '}
+                <span className="chip" style={{
+                  background: currentZoning.floodWarningLevel === 'critical' ? '#fee2e2' : currentZoning.floodWarningLevel === 'high' ? '#ffedd5' : '#f1f5f9',
+                  color: currentZoning.floodWarningLevel === 'critical' ? '#b91c1c' : currentZoning.floodWarningLevel === 'high' ? '#c2410c' : '#334155',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                }}>
+                  {lang === 'bn' ? currentZoning.floodWarningBn : currentZoning.floodWarningEn}
+                </span>
+              </div>
+              <div>
+                <b>📜 {lang === 'bn' ? 'মাস্টারপ্ল্যান কোড' : 'Masterplan Code'}:</b>{' '}
+                <span className="mono" style={{ background: '#e2e8f0', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
+                  {currentZoning.masterplanCode}
+                </span>
+              </div>
+              <div>
+                <b>⚖️ {lang === 'bn' ? 'ব্যবহার বিধিনিষেধ ও আইন' : 'Zoning Regulations'}:</b>{' '}
+                <span style={{ fontSize: '0.82rem', color: '#475569' }}>
+                  {lang === 'bn' ? currentZoning.regulationsBn : currentZoning.regulationsEn}
+                </span>
+              </div>
             </div>
           </div>
         </Modal>
