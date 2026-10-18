@@ -5,11 +5,13 @@ import { StatusBadge, BilingualName } from '../components/ui/StatusBadge';
 import { inspections, plots } from '../data/seed';
 import { useToast } from '../components/ui/Toaster';
 import { Modal } from '../components/ui/Modal';
+import type { FieldInspection as FieldInspectionType } from '../data/types';
 
 export const FieldInspection: React.FC<{ onSelectPlot: (id: string | null) => void }> = ({ onSelectPlot }) => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { show } = useToast();
   const [open, setOpen] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<FieldInspectionType | null>(null);
   const [form, setForm] = useState({
     plotId: plots[0].id,
     inspector: 'Md. Monir Hossain',
@@ -92,7 +94,14 @@ export const FieldInspection: React.FC<{ onSelectPlot: (id: string | null) => vo
                       ) : <span className="muted text-xs">—</span>}
                     </td>
                     <td>
-                      <button className="btn btn-sm btn-outline" onClick={() => onSelectPlot(i.plotId)}>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        title={lang === 'bn' ? 'পরিদর্শনের বিস্তারিত দেখুন' : 'View Inspection Details'}
+                        onClick={() => {
+                          setSelectedInspection(i);
+                          onSelectPlot(i.plotId);
+                        }}
+                      >
                         <I.eye size={12} />
                       </button>
                     </td>
@@ -156,6 +165,70 @@ export const FieldInspection: React.FC<{ onSelectPlot: (id: string | null) => vo
           </div>
         </div>
       </Modal>
+
+      {/* Selected Field Inspection Details Modal */}
+      {selectedInspection && (() => {
+        const plot = plots.find(p => p.id === selectedInspection.plotId);
+        return (
+          <Modal
+            open={!!selectedInspection}
+            onClose={() => setSelectedInspection(null)}
+            title={`📋 ${lang === 'bn' ? 'মাঠ পরিদর্শনের পূর্ণাঙ্গ প্রতিবেদন' : 'Field Inspection Report'} — ${selectedInspection.id}`}
+            size="md"
+            footer={
+              <button className="btn btn-sm btn-outline" onClick={() => setSelectedInspection(null)}>
+                {t('common.close')}
+              </button>
+            }
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{
+                background: selectedInspection.status === 'completed' ? '#f0fdf4' : '#fffbeb',
+                border: selectedInspection.status === 'completed' ? '1px solid #86efac' : '1px solid #fde68a',
+                borderRadius: 8,
+                padding: '10px 14px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem' }}>পরিদর্শন আইডি: {selectedInspection.id}</h4>
+                  <div className="muted text-xs">দায়িত্বপ্রাপ্ত কর্মকর্তা: <b>{selectedInspection.inspector}</b></div>
+                </div>
+                <StatusBadge status={selectedInspection.status} size="sm" />
+              </div>
+
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: '0.8rem' }}>
+                <div><span className="text-xs muted block">নির্ধারিত তারিখ:</span><span className="mono">{selectedInspection.dueDate}</span></div>
+                <div><span className="text-xs muted block">সম্পন্নের তারিখ:</span><span className="mono">{selectedInspection.completedOn || 'চলমান / অপেক্ষমান'}</span></div>
+                <div><span className="text-xs muted block">দাগ নম্বর:</span><b>{plot?.dag || '—'}</b></div>
+                <div><span className="text-xs muted block">খতিয়ান নম্বর:</span><b className="mono">{plot?.khatian || '—'}</b></div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span className="text-xs muted block">মৌজা ও উপজেলা:</span>
+                  <b><BilingualName en={plot?.upazila} bn={plot?.upazilaBn} />, <BilingualName en={plot?.mouza} bn={plot?.mouzaBn} /></b>
+                </div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: 12 }}>
+                <h5 style={{ margin: '0 0 6px 0', fontSize: '0.85rem' }}>📝 সরেজমিন প্রাপ্ত তথ্য ও পর্যবেক্ষণ (Findings)</h5>
+                <div style={{ fontSize: '0.82rem', color: '#1e293b', background: '#f8fafc', padding: 8, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+                  <b>প্রাপ্ত ফলাফল:</b> {selectedInspection.finding || 'কোনো আনুষ্ঠানিক অসঙ্গতি পাওয়া যায়নি।'}
+                  {selectedInspection.notes && (
+                    <div style={{ marginTop: 6, color: '#475569' }}>
+                      <b>মন্তব্য:</b> {selectedInspection.notes}
+                    </div>
+                  )}
+                </div>
+                {selectedInspection.gps && (
+                  <div style={{ marginTop: 8, fontSize: '0.78rem', color: '#64748b' }}>
+                    📍 <b>সরেজমিন জিপিএস পিন:</b> {selectedInspection.gps.lat.toFixed(5)}, {selectedInspection.gps.lng.toFixed(5)}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Modal>
+        );
+      })()}
     </div>
   );
 };
