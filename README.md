@@ -1240,23 +1240,23 @@ stateDiagram-v2
 ```mermaid
 erDiagram
     MOUZA ||--o{ PLOT : contains
-    MOUZA ||--o{ MOUZA_RATE : "priced by"
-    PLOT ||--|{ KHATIAN_RECORD : "recorded in"
-    PLOT }o--o{ OWNER : "owned by"
-    PLOT ||--o{ DEED : "transferred by"
-    PLOT ||--o{ COURT_CASE : "subject of"
+    MOUZA ||--o{ MOUZA_RATE : priced_by
+    PLOT ||--o{ KHATIAN_RECORD : recorded_in
+    PLOT }o--o{ OWNER : owned_by
+    PLOT ||--o{ DEED : transferred_by
+    PLOT ||--o{ COURT_CASE : subject_of
     COURT_CASE ||--o| REGISTRATION_LOCK : triggers
-    PLOT ||--o{ BANK_MORTGAGE : encumbered
-    PLOT ||--o{ POWER_OF_ATTORNEY : "covered by"
-    PLOT ||--o{ ENCROACHMENT_ALERT : "threatened by"
+    PLOT ||--o{ BANK_MORTGAGE : encumbered_by
+    PLOT ||--o{ POWER_OF_ATTORNEY : covered_by
+    PLOT ||--o{ ENCROACHMENT_ALERT : threatened_by
     SENSOR ||--o{ ENCROACHMENT_ALERT : raises
-    PLOT |o--o| KHAS_PARCEL : "classified as"
-    PLOT ||--o{ RIVER_CHANGE_EVENT : affected
-    PLOT ||--o{ LA_CLAIM : acquired
+    PLOT ||--o| KHAS_PARCEL : classified_as
+    PLOT ||--o{ RIVER_CHANGE_EVENT : affected_by
+    PLOT ||--o{ LA_CLAIM : acquired_by
     PLOT ||--o{ FIELD_INSPECTION : visited
     PLOT ||--o| RISK_SCORE : rated
     PLOT ||--o{ LEDGER_BLOCK : audited
-    LEDGER_BLOCK ||--o| LEDGER_BLOCK : previous
+    LEDGER_BLOCK o|--o{ LEDGER_BLOCK : previous
 
     MOUZA {
         string mouzaId PK
@@ -1266,6 +1266,7 @@ erDiagram
         string nameEn
         string jlNumber
     }
+
     PLOT {
         string plotId PK
         string mouzaId FK
@@ -1276,29 +1277,33 @@ erDiagram
         string geometry
         int riskScore
     }
+
     KHATIAN_RECORD {
         string khatianId PK
         string plotId FK
-        string epoch "CS SA RS BS"
+        string epoch
         string khatianNumber
         string recordedOwner
         float recordedArea
     }
+
     OWNER {
         string ownerId PK
         string name
         string fatherName
         string nidMasked
     }
+
     DEED {
         string deedNumber PK
         string plotId FK
-        string type "inheritance sale mutation"
+        string type
         date deedDate
         string fromOwner
         string toOwner
         string status
     }
+
     COURT_CASE {
         string caseNumber PK
         string court
@@ -1306,12 +1311,14 @@ erDiagram
         date lockDate
         string status
     }
+
     REGISTRATION_LOCK {
         string lockId PK
         string caseNumber FK
         boolean active
         string releaseReason
     }
+
     BANK_MORTGAGE {
         string lienId PK
         string plotId FK
@@ -1324,6 +1331,7 @@ erDiagram
         date endDate
         string status
     }
+
     POWER_OF_ATTORNEY {
         string deedNumber PK
         string plotId FK
@@ -1333,6 +1341,7 @@ erDiagram
         float maxArea
         string status
     }
+
     ENCROACHMENT_ALERT {
         string alertId PK
         string plotId FK
@@ -1341,10 +1350,12 @@ erDiagram
         date detectedOn
         string status
     }
+
     SENSOR {
         string sensorId PK
         string state
     }
+
     KHAS_PARCEL {
         string khasId PK
         string plotId FK
@@ -1352,13 +1363,15 @@ erDiagram
         float areaDecimals
         string status
     }
+
     RIVER_CHANGE_EVENT {
         string eventId PK
         string plotId FK
-        string kind "sikosti poyosti"
+        string kind
         float affectedPercent
         date appealDeadline
     }
+
     LA_CLAIM {
         string claimId PK
         string plotId FK
@@ -1368,6 +1381,7 @@ erDiagram
         decimal totalAward
         string status
     }
+
     FIELD_INSPECTION {
         string inspectionId PK
         string plotId FK
@@ -1376,6 +1390,7 @@ erDiagram
         date completed
         string outcome
     }
+
     RISK_SCORE {
         string plotId PK
         int legal
@@ -1384,6 +1399,7 @@ erDiagram
         int fraud
         int total
     }
+
     MOUZA_RATE {
         string rateId PK
         string mouzaId FK
@@ -1391,6 +1407,7 @@ erDiagram
         decimal ratePerDecimal
         int effectiveYear
     }
+
     LEDGER_BLOCK {
         int idx PK
         string eventId
@@ -1401,7 +1418,6 @@ erDiagram
         string previousHash
         string hash
     }
-```
 
 ---
 
