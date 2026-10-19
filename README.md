@@ -403,7 +403,7 @@ flowchart LR
 
 ## 🧩 UML Diagrams
 
-> All diagrams are Mermaid and render natively on GitHub. Source copies live in [`docs/`](#-documentation-index).
+> Diagrams are pre-rendered images in `docs/diagrams/` so they display reliably everywhere; simpler ones remain live Mermaid.
 
 ### 8.1 Use Case Diagram
 
@@ -711,54 +711,7 @@ classDiagram
 
 ### 8.3 Component Diagram
 
-```mermaid
-flowchart TB
-    subgraph UI["UI Components"]
-        NAV["Sidebar and Header"]
-        DASH["Dashboard Views x5"]
-        MAPV["MapView"]
-        FORMS["Search and Report Forms"]
-        MODALS["Detail Modals"]
-        CERT["Certificate Generator"]
-        BADGE["Verification Badge"]
-    end
-
-    subgraph CTX["Context Providers"]
-        LANG["LanguageContext"]
-        ROLE["Role and Session"]
-        TOAST["Notifications"]
-    end
-
-    subgraph SVC["Services"]
-        S1["valuation"]
-        S2["acquisition"]
-        S3["powerOfAttorney"]
-        S4["encroachment"]
-        S5["cryptoLedger"]
-    end
-
-    subgraph DAT["Data"]
-        D1["seedData"]
-        D2["advancedSeedData"]
-        D3["translations"]
-    end
-
-    NAV --> LANG
-    DASH --> MAPV
-    DASH --> S4
-    FORMS --> S1
-    FORMS --> S3
-    MODALS --> S5
-    CERT --> S5
-    BADGE --> S5
-    S1 --> D2
-    S2 --> D2
-    S3 --> D2
-    S4 --> D1
-    LANG --> D3
-    ROLE --> NAV
-    TOAST --> MODALS
-```
+<p align="center"><img src="docs/diagrams/component.png" alt="Component diagram" width="80%" /></p>
 
 ### 8.4 Package Diagram
 
@@ -1060,180 +1013,49 @@ flowchart TD
 
 #### (c) Encroachment lifecycle workflow
 
-```mermaid
-flowchart TD
-    A(["Signal received"]) --> B{"Source"}
-    B -- "IoT sensor" --> C["Sensor boundary breach"]
-    B -- "Satellite change" --> D["NDBI jump on protected parcel"]
-    B -- "Citizen report" --> E["GPS + photo + description"]
-    C & D & E --> F["Spatial screening against khas, river and protected layers"]
-    F --> G{"Overlap confirmed?"}
-    G -- No --> G1["Log as noise"] --> Z
-    G -- Yes --> H["Assign severity"]
-    H --> I{"Severity"}
-    I -- High --> I1["Immediate alert to AC Land"]
-    I -- Medium --> I2["Queue for review"]
-    I -- Low --> I3["Monitor"]
-    I1 & I2 --> J["Start investigation and field inspection"]
-    I3 --> J
-    J --> K{"Encroachment verified?"}
-    K -- Yes --> L["Eviction / recovery action"] --> M["Mark resolved"]
-    K -- No --> N["Dismiss as false positive"]
-    M & N --> O["Append to ledger"] --> Z(["End"])
-```
+<p align="center"><img src="docs/diagrams/encroachment-workflow.png" alt="Encroachment lifecycle workflow" width="55%" /></p>
 
 #### (d) PoA validity gate
 
-```mermaid
-flowchart TD
-    A(["Select PoA deed + Plot + proposed action"]) --> B{"Deed found in registry?"}
-    B -- No --> X1["BLOCK: unregistered instrument"]
-    B -- Yes --> C{"Revoked?"}
-    C -- Yes --> X2["BLOCK: revoked"]
-    C -- No --> D{"Expired?"}
-    D -- Yes --> X3["BLOCK: expired"]
-    D -- No --> E{"Principal deceased?"}
-    E -- Yes --> X4["SUSPEND: death-triggered"]
-    E -- No --> F{"Plot covered by PoA?"}
-    F -- No --> X5["BLOCK: out of scope"]
-    F -- Yes --> G{"Action permitted?<br/>sale / mortgage / mutation / development / litigation"}
-    G -- No --> X6["BLOCK: action not authorised"]
-    G -- Yes --> H{"Requested area within authorised share?"}
-    H -- No --> X7["BLOCK: exceeds share"]
-    H -- Yes --> OK["ALLOW"]
-    X1 & X2 & X3 & X4 & X5 & X6 & X7 --> L["Log decision"]
-    OK --> L --> E2(["End"])
-```
+<p align="center"><img src="docs/diagrams/poa-gate.png" alt="PoA validity gate" width="75%" /></p>
 
 #### (e) Risk-score computation
 
-```mermaid
-flowchart LR
-    subgraph IN["Inputs"]
-        I1["Deeds · mutations · disputes"]
-        I2["Erosion and accretion history"]
-        I3["Flood-zone and hydrology"]
-        I4["Fraud signals<br/>duplicate deeds, flagged mutation"]
-    end
-    I1 --> L["Legal risk"]
-    I2 --> P["Physical risk"]
-    I3 --> V["Environmental risk"]
-    I4 --> F["Fraud risk"]
-    L & P & V & F --> AGG["Aggregate to 0-100"]
-    AGG --> BAND{"Band"}
-    BAND -- "low" --> B1["Low risk"]
-    BAND -- "mid" --> B2["Moderate risk"]
-    BAND -- "high" --> B3["High risk"]
-    B1 & B2 & B3 --> REC["Recommendations + owner summary"]
-```
+<p align="center"><img src="docs/diagrams/risk-score.png" alt="Risk-score computation" width="100%" /></p>
 
 ### 8.7 State Machine Diagrams
 
 #### Encroachment alert
 
-```mermaid
-stateDiagram-v2
-    [*] --> Detected
-    Detected --> Triaged : severity assigned
-    Triaged --> Investigating : start investigation
-    Investigating --> ActionTaken : encroachment verified
-    Investigating --> Dismissed : false positive
-    ActionTaken --> Resolved : mark resolved
-    Resolved --> [*]
-    Dismissed --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-encroachment.png" alt="Encroachment alert state machine" width="100%" /></p>
 
 #### Litigation registration lock
 
-```mermaid
-stateDiagram-v2
-    [*] --> Unlocked
-    Unlocked --> Locked : case filed + court order
-    Locked --> Locked : new case added
-    Locked --> Released : order lifted / suit disposed
-    Released --> Unlocked : lock record archived
-    Locked --> Violation : registration attempt
-    Violation --> Locked : attempt refused and logged
-```
+<p align="center"><img src="docs/diagrams/state-litigation.png" alt="Litigation lock state machine" width="70%" /></p>
 
 #### Power of Attorney
 
-```mermaid
-stateDiagram-v2
-    [*] --> Active : registered at sub-registry
-    Active --> Revoked : principal revokes
-    Active --> Expired : term ends
-    Active --> Suspended : principal deceased
-    Suspended --> Revoked : heirs confirm
-    Revoked --> [*]
-    Expired --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-poa.png" alt="PoA state machine" width="65%" /></p>
 
 #### Bank mortgage
 
-```mermaid
-stateDiagram-v2
-    [*] --> UnderReview : lien application
-    UnderReview --> Active : EC issued
-    UnderReview --> Rejected : documents invalid
-    Active --> Released : loan cleared
-    Active --> Defaulted : repayment failure
-    Defaulted --> Released : settlement
-    Released --> [*]
-    Rejected --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-mortgage.png" alt="Bank mortgage state machine" width="85%" /></p>
 
 #### Sikosti / Poyosti plot
 
-```mermaid
-stateDiagram-v2
-    [*] --> Stable
-    Stable --> Eroding : river diluvion detected
-    Eroding --> Submerged : fully river-bed
-    Eroding --> Appealed : owner files within 60 days
-    Appealed --> Stable : appeal upheld
-    Appealed --> Submerged : appeal rejected
-    Stable --> NewChar : accretion emerges
-    NewChar --> StateOwned : claimed under SATA
-    Submerged --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-sikosti.png" alt="Sikosti and Poyosti state machine" width="90%" /></p>
 
 #### LA compensation claim
 
-```mermaid
-stateDiagram-v2
-    [*] --> Filed
-    Filed --> Calculated : award computed
-    Calculated --> Verified : bank account and NID verified
-    Verified --> PaymentConfirmed : G2P EFT sent
-    PaymentConfirmed --> Closed : voucher printed
-    Verified --> Disputed : claimant objects
-    Disputed --> Calculated : recomputed
-    Closed --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-la-claim.png" alt="LA compensation claim state machine" width="100%" /></p>
 
 #### Field inspection
 
-```mermaid
-stateDiagram-v2
-    [*] --> Scheduled
-    Scheduled --> InProgress : officer arrives
-    InProgress --> Completed : findings submitted
-    InProgress --> Rejected : insufficient evidence
-    Rejected --> Scheduled : rescheduled
-    Completed --> [*]
-```
+<p align="center"><img src="docs/diagrams/state-field-inspection.png" alt="Field inspection state machine" width="65%" /></p>
 
 #### Ledger block
 
-```mermaid
-stateDiagram-v2
-    [*] --> Pending
-    Pending --> Committed : hash computed and linked
-    Committed --> Verified : chain walk OK
-    Committed --> Tampered : hash mismatch found
-    Tampered --> Committed : restore and re-seal
-```
+<p align="center"><img src="docs/diagrams/state-ledger-block.png" alt="Ledger block state machine" width="65%" /></p>
 
 ### 8.8 Entity-Relationship Diagram
 
@@ -1418,6 +1240,7 @@ erDiagram
         string previousHash
         string hash
     }
+<p align="center"><img src="docs/diagrams/er-diagram.png" alt="Entity-relationship diagram" width="100%" /></p>
 
 ---
 
@@ -1429,14 +1252,7 @@ The charts below are drawn from the **seeded demonstration dataset** shipped wit
 
 Vegetation (NDVI) declines while open-water signal (NDWI) rises across 2016 → 2026 for the sample parcel — the pattern the *Sikosti & Poyosti* module treats as a river-encroachment signature.
 
-```mermaid
-xychart-beta
-    title "NDVI (falling) vs NDWI (rising), 2016-2026"
-    x-axis [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
-    y-axis "Index value" 0.2 --> 0.7
-    line [0.62, 0.60, 0.58, 0.55, 0.52, 0.50, 0.48, 0.46, 0.44, 0.42, 0.40]
-    line [0.34, 0.36, 0.40, 0.43, 0.45, 0.48, 0.50, 0.52, 0.54, 0.56, 0.58]
-```
+<p align="center"><img src="docs/diagrams/chart-satellite-indices.png" alt="NDVI vs NDWI 2016-2026" width="75%" /></p>
 
 <sub>Upper-left line = NDVI · lower-left line = NDWI. 2026 snapshot: NDVI 0.40 · NDWI 0.58 · NDBI 0.38.</sub>
 
@@ -1452,23 +1268,11 @@ pie showData
 
 ### Encroachment alerts by severity
 
-```mermaid
-pie showData
-    title 4 active encroachment alerts
-    "High" : 1
-    "Medium" : 2
-    "Low" : 1
-```
+<p align="center"><img src="docs/diagrams/chart-encroachment-severity.png" alt="Encroachment alerts by severity" width="45%" /></p>
 
 ### Land-risk factor breakdown (sample plot · composite 28/100 · *low risk*)
 
-```mermaid
-xychart-beta
-    title "Risk factors - PLT-DHK-001 (Dag 88/88)"
-    x-axis ["Legal", "Physical", "Environmental", "Fraud"]
-    y-axis "Score" 0 --> 40
-    bar [18, 12, 25, 8]
-```
+<p align="center"><img src="docs/diagrams/chart-risk-factors.png" alt="Risk factor breakdown" width="60%" /></p>
 
 ### Seed-dataset at a glance
 
@@ -1497,15 +1301,7 @@ xychart-beta
 
 Every consequential action becomes a **block**. A block's hash commits to its own canonicalised payload *and* to the previous block's hash, so changing any historical byte invalidates every block after it.
 
-```mermaid
-flowchart LR
-    G["Block 0 · Genesis<br/>prev = 64 zeros<br/>EVT-2026-0001<br/>hash e0a820555f…"]
-    B1["Block 1<br/>EVT-2026-0002<br/>prev e0a820555f…<br/>hash 3050026cea…"]
-    B2["Block 2<br/>EVT-2026-0003<br/>prev 3050026cea…<br/>hash ea00cb0c38…"]
-    B3["Block 3<br/>EVT-2026-0004<br/>prev ea00cb0c38…<br/>hash 31796a3e1d…"]
-    BN["Block N …"]
-    G --> B1 --> B2 --> B3 --> BN
-```
+<p align="center"><img src="docs/diagrams/ledger-chain.png" alt="Hash-chained ledger" width="100%" /></p>
 
 <sub>Hashes shown are the first ten hex characters of the sample chain visible in the ledger screenshot.</sub>
 
@@ -1775,16 +1571,7 @@ npm test
 
 ### Test coverage map
 
-```mermaid
-flowchart LR
-    T1["SHA-256 NIST vectors"] --> SEC["Security core"]
-    T2["Ledger chain + tamper"] --> SEC
-    T3["Valuation engine"] --> FIN["Fiscal engines"]
-    T4["ARIPA compensation"] --> FIN
-    T5["PoA sentinel"] --> FRAUD["Anti-fraud rules"]
-    T6["Ray-casting geometry"] --> GIS["GIS correctness"]
-    SEC & FIN & FRAUD & GIS --> GATE{{"All pass → merge allowed"}}
-```
+<p align="center"><img src="docs/diagrams/test-coverage.png" alt="Test coverage map" width="65%" /></p>
 
 > **Roadmap for tests:** add cases for litigation lock transitions, mortgage release, encroachment state machine and the lineage matcher — each state diagram above maps 1-to-1 to a table-driven test.
 
@@ -1805,6 +1592,7 @@ BhumiRadar/
 │   ├── research.md                      # International land-tech case studies
 │   ├── research-bd.md                   # Bangladesh feature/gap guide
 │   ├── Bangladesh digital land services.md   # Ecosystem, API & security analysis
+│   ├── diagrams/                        # Pre-rendered UML & architecture diagrams
 │   └── screenshots/                     # UI screenshots used in this README
 │
 ├── public/
@@ -1878,31 +1666,7 @@ BhumiRadar/
 
 The `docs/` set also specifies the **Bangladesh Digital Land Records & Cadastral GIS Platform** — the cadastral-data backbone that BhumiRadar's DLRMS spatial adapter is intended to connect to when moving beyond seed data. It is documented in [`PRD`](docs/PRD.md), [`TRD`](docs/TRD.md), [`APP_FLOW`](docs/APP_FLOW.md) and [`BACKEND_SCHEMA`](docs/BACKEND_SCHEMA.md).
 
-```mermaid
-flowchart LR
-    subgraph DATA["Data layer"]
-        D1[("land_data/<br/>GeoJSON + CSV")]
-        D2[("thematic_land_layers/")]
-        D3[("mauza_index.json")]
-    end
-    subgraph SVC["Service layer"]
-        S1["MauzaIndex<br/>in-memory index"]
-        S2["PyMuPDF + OpenCV<br/>vision pipeline"]
-        S3["Cadastral unit and<br/>scale calculator"]
-        S4["KML / KMZ exporter"]
-    end
-    subgraph API["FastAPI /api/v1"]
-        A1["divisions · districts · upazilas"]
-        A2["mauzas · plots/search"]
-        A3["scanner: scan · measure · export"]
-        A4["chat/message"]
-    end
-    UI["BhumiRadar and Leaflet clients"]
-    D1 & D3 --> S1
-    S1 --> A1 & A2
-    S2 & S3 & S4 --> A3
-    A1 & A2 & A3 & A4 --> UI
-```
+<p align="center"><img src="docs/diagrams/companion-platform.png" alt="Companion cadastral data platform" width="100%" /></p>
 
 | Capability | Detail |
 | :-- | :-- |
@@ -1963,39 +1727,13 @@ BhumiRadar's design follows the conclusions of the international benchmark in [`
 
 **Bangladesh service landscape the platform complements:** e-Mutation (নামজারি), Land Development Tax portal, Smart Bhumi Naksha (`map.land.gov.bd`), Land History, and the 16122 hotline.
 
-```mermaid
-flowchart LR
-    subgraph Today["Fragmented today"]
-        T1["e-Mutation"]
-        T2["Land Dev Tax"]
-        T3["Digital Maps"]
-        T4["Registration"]
-        T5["Courts"]
-        T6["Banks"]
-    end
-    PID(("Parcel ID"))
-    T1 & T2 & T3 & T4 & T5 & T6 --> PID
-    PID --> BR["BhumiRadar<br/>one verified view"]
-    BR --> O1["Citizen verdict"]
-    BR --> O2["Officer toolkit"]
-    BR --> O3["Tamper-evident audit"]
-```
+<p align="center"><img src="docs/diagrams/research-parcel-id.png" alt="Parcel-centric integration" width="65%" /></p>
 
 ---
 
 ## 🚀 Roadmap
 
-```mermaid
-timeline
-    title BhumiRadar delivery roadmap
-    section Delivered
-        Foundation : Four-epoch lineage matcher : Mouza valuation and fee engine : Cryptographic ledger : PoA Sentinel and LA compensation
-        Radar and enforcement : Temporal satellite map : Litigation lock and bank liens : Encroachment, khas and sikosti : Risk score and field inspection
-    section Next
-        Integration : Live Sentinel-2 change detection : Porichoy NID bridge : e-Namjari bidirectional sync : PostGIS and vector tiles
-    section Vision
-        Intelligence and scale : Bengali digit OCR for Dag numbers : Offline-first field PWA : Smart-contract mutation pilot : National ledger node
-```
+<p align="center"><img src="docs/diagrams/roadmap.png" alt="Delivery roadmap" width="100%" /></p>
 
 | Horizon | Initiative | Detail |
 | :-- | :-- | :-- |
